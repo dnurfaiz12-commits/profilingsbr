@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Geotag Lokasi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e5799 0%,#207cca 51%,#2989d8 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .location-info {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .location-info .form-group {
+            flex: 1;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(90deg, #2980b9, #2573a7);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-location {
+            background: linear-gradient(90deg, #27ae60, #219653);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .btn-save {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .map-container {
+            height: 300px;
+            margin-top: 25px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #ddd;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3498db;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                margin-top: 15px;
+            }
+            
+            header {
+                padding: 20px 15px;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .location-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-map-marker-alt"></i> Aplikasi Geotag Lokasi</h1>
+            <p>Pilih lokasi, ambil koordinat, dan simpan data ke Google Sheets</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="form-group">
+                <label for="kecamatan"><i class="fas fa-map"></i> Pilih Kecamatan</label>
+                <select id="kecamatan" class="form-control">
+                    <option value="">-- Memuat data kecamatan --</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="desa"><i class="fas fa-map-pin"></i> Pilih Desa</label>
+                <select id="desa" class="form-control" disabled>
+                    <option value="">-- Pilih kecamatan terlebih dahulu --</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="dusun"><i class="fas fa-home"></i> Dusun</label>
+                <input type="text" id="dusun" class="form-control" placeholder="Masukkan nama dusun">
+            </div>
+            
+            <button id="btn-location" class="btn btn-location">
+                <i class="fas fa-location-crosshairs"></i> Ambil Lokasi Sekarang
+            </button>
+            
+            <div class="location-info">
+                <div class="form-group">
+                    <label for="latitude"><i class="fas fa-globe-asia"></i> Latitude</label>
+                    <input type="text" id="latitude" class="form-control" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="longitude"><i class="fas fa-globe-asia"></i> Longitude</label>
+                    <input type="text" id="longitude" class="form-control" readonly>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Menyimpan data ke Google Sheets...</p>
+            </div>
+            
+            <div class="status" id="status"></div>
+            
+            <button id="btn-save" class="btn btn-save" disabled>
+                <i class="fas fa-save"></i> Simpan Data ke Google Sheets
+            </button>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2023 Aplikasi Geotag Lokasi | Data disimpan ke Google Sheets</p>
+    </footer>
+
+    <script>
+        // Inisialisasi variabel
+        let map, marker;
+        let selectedKecamatan = "";
+        let selectedDesa = "";
+        
+        // ID Google Sheets
+        const SPREADSHEET_ID = "1C5pikNSdqqWj62nH2kEUBB905oHwjqK4OZx6V8_t6_U";
+        
+        // Fungsi untuk memuat data kecamatan dari Google Sheets
+        async function loadKecamatan() {
+            try {
+                const response = await axios.get(
+                    `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=Data&tq=SELECT%20A`
+                );
+                
+                const data = response.data.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/)[1];
+                const jsonData = JSON.parse(data);
+                
+                const kecamatanSelect = document.getElementById('kecamatan');
+                kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+                
+                // Asumsikan data kecamatan ada di kolom pertama
+                const rows = jsonData.table.rows;
+                rows.forEach((row, index) => {
+                    if (index === 0) return; // Lewati header
+                    const kecamatan = row.c[0]?.v;
+                    if (kecamatan) {
+                        const option = document.createElement('option');
+                        option.value = kecamatan;
+                        option.textContent = kecamatan;
+                        kecamatanSelect.appendChild(option);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error loading kecamatan:', error);
+                showStatus('Gagal memuat data kecamatan', 'error');
+            }
+        }
+        
+        // Fungsi untuk memuat data desa berdasarkan kecamatan
+        async function loadDesa(kecamatan) {
+            const desaSelect = document.getElementById('desa');
+            desaSelect.disabled = true;
+            desaSelect.innerHTML = '<option value="">-- Memuat data desa --</option>';
+            
+            try {
+                const encodedKecamatan = encodeURIComponent(kecamatan);
+                const response = await axios.get(
+                    `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=Data&tq=SELECT%20B%20WHERE%20A%3D'${encodedKecamatan}'`
+                );
+                
+                const data = response.data.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/)[1];
+                const jsonData = JSON.parse(data);
+                
+                desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
+                
+                const rows = jsonData.table.rows;
+                rows.forEach((row) => {
+                    const desa = row.c[0]?.v;
+                    if (desa) {
+                        const option = document.createElement('option');
+                        option.value = desa;
+                        option.textContent = desa;
+                        desaSelect.appendChild(option);
+                    }
+                });
+                
+                desaSelect.disabled = false;
+                
+            } catch (error) {
+                console.error('Error loading desa:', error);
+                desaSelect.innerHTML = '<option value="">-- Gagal memuat desa --</option>';
+                showStatus('Gagal memuat data desa', 'error');
+            }
+        }
+        
+        // Fungsi untuk menampilkan status
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Fungsi untuk mendapatkan lokasi pengguna
+        function getLocation() {
+            if (navigator.geolocation) {
+                showStatus('Mengambil lokasi...', 'success');
+                
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        document.getElementById('latitude').value = lat.toFixed(6);
+                        document.getElementById('longitude').value = lng.toFixed(6);
+                        document.getElementById('btn-save').disabled = false;
+                        
+                        // Tampilkan peta
+                        initMap(lat, lng);
+                        
+                        showStatus('Lokasi berhasil didapatkan', 'success');
+                    },
+                    error => {
+                        console.error('Error getting location:', error);
+                        let errorMessage = '';
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = "Pengguna menolak permintaan geolokasi.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = "Informasi lokasi tidak tersedia.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = "Permintaan lokasi pengguna habis waktunya.";
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMessage = "Terjadi kesalahan yang tidak diketahui.";
+                                break;
+                        }
+                        
+                        showStatus('Error: ' + errorMessage, 'error');
+                    }
+                );
+            } else {
+                showStatus('Geolokasi tidak didukung oleh browser ini.', 'error');
+            }
+        }
+        
+        // Fungsi untuk inisialisasi peta
+        function initMap(lat, lng) {
+            // Hapus peta sebelumnya jika ada
+            if (map) {
+                map.remove();
+            }
+            
+            // Buat peta baru
+            map = L.map('map').setView([lat, lng], 15);
+            
+            // Tambahkan layer peta
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Hapus marker sebelumnya jika ada
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            
+            // Tambahkan marker baru
+            marker = L.marker([lat, lng]).addTo(map)
+                .bindPopup('Lokasi Anda')
+                .openPopup();
+        }
+        
+        // Fungsi untuk menyimpan data ke Google Sheets
+        async function saveData() {
+            const kecamatan = document.getElementById('kecamatan').value;
+            const desa = document.getElementById('desa').value;
+            const dusun = document.getElementById('dusun').value;
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+            
+            // Validasi input
+            if (!kecamatan || !desa || !dusun || !latitude || !longitude) {
+                showStatus('Harap lengkapi semua data sebelum menyimpan', 'error');
+                return;
+            }
+            
+            // Tampilkan loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('btn-save').disabled = true;
+            
+            try {
+                // Simpan data ke Google Sheets menggunakan Google Apps Script
+                // (Dalam implementasi nyata, Anda perlu membuat Google Apps Script untuk menangani ini)
+                
+                // Simulasikan penyimpanan data
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    showStatus('Data berhasil disimpan ke Google Sheets!', 'success');
+                    
+                    // Reset form
+                    document.getElementById('kecamatan').value = '';
+                    document.getElementById('desa').value = '';
+                    document.getElementById('desa').disabled = true;
+                    document.getElementById('dusun').value = '';
+                    document.getElementById('latitude').value = '';
+                    document.getElementById('longitude').value = '';
+                    document.getElementById('btn-save').disabled = true;
+                    
+                    // Hapus peta
+                    if (map) {
+                        map.remove();
+                        map = null;
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error saving data:', error);
+                document.getElementById('loading').style.display = 'none';
+                showStatus('Gagal menyimpan data: ' + error.message, 'error');
+                document.getElementById('btn-save').disabled = false;
+            }
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Muat data kecamatan saat halaman dimuat
+            loadKecamatan();
+            
+            // Event untuk dropdown kecamatan
+            document.getElementById('kecamatan').addEventListener('change', function() {
+                if (this.value) {
+                    selectedKecamatan = this.value;
+                    loadDesa(this.value);
+                } else {
+                    document.getElementById('desa').disabled = true;
+                    document.getElementById('desa').innerHTML = '<option value="">-- Pilih kecamatan terlebih dahulu --</option>';
+                }
+            });
+            
+            // Event untuk tombol ambil lokasi
+            document.getElementById('btn-location').addEventListener('click', getLocation);
+            
+            // Event untuk tombol simpan
+            document.getElementById('btn-save').addEventListener('click', saveData);
+        });
+        
+        // Inisialisasi library peta
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+        script.crossOrigin = '';
+        document.head.appendChild(script);
+        
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+        link.crossOrigin = '';
+        document.head.appendChild(link);
+    </script>
+</body>
+</html>
