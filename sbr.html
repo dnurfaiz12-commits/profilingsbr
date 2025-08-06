@@ -1,0 +1,343 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px; 
+      max-width: 600px; 
+      margin: 0 auto; 
+      background-color: #f5f5f5;
+    }
+    .card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 25px;
+      margin-top: 20px;
+    }
+    h1 {
+      color: #1a73e8;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .form-group { 
+      margin-bottom: 20px; 
+    }
+    label { 
+      display: block; 
+      margin-bottom: 8px; 
+      font-weight: 600;
+      color: #202124;
+    }
+    select, input { 
+      width: 100%; 
+      padding: 12px; 
+      box-sizing: border-box; 
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    select:focus, input:focus {
+      border-color: #1a73e8;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+    }
+    button { 
+      background-color: #1a73e8; 
+      color: white; 
+      padding: 12px 24px; 
+      border: none; 
+      border-radius: 4px;
+      cursor: pointer; 
+      font-size: 16px;
+      font-weight: 600;
+      width: 100%;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #1765cc;
+    }
+    button:disabled { 
+      background-color: #bdc1c6; 
+      cursor: not-allowed;
+    }
+    .status { 
+      margin: 20px 0; 
+      padding: 15px; 
+      border-radius: 4px; 
+      text-align: center;
+      font-size: 15px;
+    }
+    .success { 
+      background-color: #e6f4ea; 
+      color: #137333; 
+      border: 1px solid #b7e1cd;
+    }
+    .error { 
+      background-color: #fce8e6; 
+      color: #c5221f; 
+      border: 1px solid #f5c0b8;
+    }
+    .info {
+      background-color: #e8f0fe;
+      color: #1967d2;
+      border: 1px solid #c2e7ff;
+    }
+    .location-data {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-size: 14px;
+      display: none;
+    }
+    .flex-row {
+      display: flex;
+      gap: 15px;
+    }
+    .flex-row > div {
+      flex: 1;
+    }
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border-left-color: #1a73e8;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Geotagging Lokasi</h1>
+  
+  <div class="card">
+    <div class="form-group">
+      <label for="kecamatan">Kecamatan:</label>
+      <select id="kecamatan" onchange="loadDesa()">
+        <option value="">-- Pilih Kecamatan --</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="desa">Desa:</label>
+      <select id="desa" disabled>
+        <option value="">-- Pilih Desa --</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="dusun">Dusun:</label>
+      <input type="text" id="dusun" placeholder="Masukkan nama dusun">
+    </div>
+    
+    <div id="locationStatus" class="status info">
+      Klik tombol "Ambil Lokasi" untuk mendapatkan koordinat GPS
+    </div>
+    
+    <div id="locationData" class="location-data">
+      <strong>Koordinat:</strong><br>
+      <span id="coords"></span><br>
+      <strong>Akurasi:</strong> <span id="accuracy"></span> meter
+    </div>
+    
+    <div class="flex-row">
+      <div>
+        <button id="getLocationBtn" onclick="getLocation()" disabled>Ambil Lokasi</button>
+      </div>
+      <div>
+        <button id="saveBtn" onclick="saveData()" disabled>Simpan Data</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Inisialisasi dropdown kecamatan saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+      // Tampilkan status loading
+      const kecamatanSelect = document.getElementById('kecamatan');
+      kecamatanSelect.innerHTML = '<option value="">Loading data...</option>';
+      
+      google.script.run
+        .withSuccessHandler(populateKecamatan)
+        .withFailureHandler(showError)
+        .getKecamatanList();
+    });
+
+    // Populate kecamatan dropdown
+    function populateKecamatan(kecamatanList) {
+      const select = document.getElementById('kecamatan');
+      select.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+      
+      kecamatanList.forEach(kecamatan => {
+        const option = document.createElement('option');
+        option.value = kecamatan;
+        option.textContent = kecamatan;
+        select.appendChild(option);
+      });
+    }
+
+    // Load desa berdasarkan kecamatan yang dipilih
+    function loadDesa() {
+      const kecamatan = document.getElementById('kecamatan').value;
+      const desaSelect = document.getElementById('desa');
+      
+      if (!kecamatan) {
+        desaSelect.disabled = true;
+        desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
+        document.getElementById('getLocationBtn').disabled = true;
+        return;
+      }
+      
+      desaSelect.disabled = true;
+      desaSelect.innerHTML = '<option value="">Loading data...</option>';
+      
+      google.script.run
+        .withSuccessHandler(populateDesa)
+        .withFailureHandler(showError)
+        .getDesaListByKecamatan(kecamatan);
+    }
+
+    // Populate desa dropdown
+    function populateDesa(desaList) {
+      const select = document.getElementById('desa');
+      select.innerHTML = '<option value="">-- Pilih Desa --</option>';
+      
+      desaList.forEach(desa => {
+        const option = document.createElement('option');
+        option.value = desa;
+        option.textContent = desa;
+        select.appendChild(option);
+      });
+      
+      select.disabled = false;
+      
+      // Aktifkan tombol ambil lokasi jika desa dipilih
+      select.addEventListener('change', function() {
+        document.getElementById('getLocationBtn').disabled = !this.value;
+      });
+    }
+
+    // Get geolocation
+    function getLocation() {
+      const statusDiv = document.getElementById('locationStatus');
+      statusDiv.innerHTML = '<div class="spinner"></div> Mengambil lokasi...';
+      statusDiv.className = "status info";
+      
+      document.getElementById('locationData').style.display = 'none';
+      document.getElementById('saveBtn').disabled = true;
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            statusDiv.innerHTML = "✅ Lokasi berhasil diambil!";
+            statusDiv.className = "status success";
+            
+            // Tampilkan data lokasi
+            const coordsEl = document.getElementById('coords');
+            const accuracyEl = document.getElementById('accuracy');
+            coordsEl.textContent = `${position.coords.latitude}, ${position.coords.longitude}`;
+            accuracyEl.textContent = Math.round(position.coords.accuracy);
+            document.getElementById('locationData').style.display = 'block';
+            
+            document.getElementById('saveBtn').disabled = false;
+            window.currentPosition = position;
+          },
+          error => {
+            let errorMessage = "❌ Gagal mengambil lokasi: ";
+            switch(error.code) {
+              case error.PERMISSION_DENIED:
+                errorMessage += "Izin ditolak pengguna";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                errorMessage += "Informasi lokasi tidak tersedia";
+                break;
+              case error.TIMEOUT:
+                errorMessage += "Permintaan lokasi timeout";
+                break;
+              default:
+                errorMessage += "Error tidak diketahui";
+            }
+            statusDiv.innerHTML = errorMessage;
+            statusDiv.className = "status error";
+          },
+          { 
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
+      } else {
+        statusDiv.innerHTML = "❌ Geolocation tidak didukung browser ini";
+        statusDiv.className = "status error";
+      }
+    }
+
+    // Save data to sheet
+    function saveData() {
+      const kecamatan = document.getElementById('kecamatan').value;
+      const desa = document.getElementById('desa').value;
+      const dusun = document.getElementById('dusun').value;
+      const position = window.currentPosition;
+      
+      if (!kecamatan || !desa) {
+        alert("Harap pilih kecamatan dan desa terlebih dahulu!");
+        return;
+      }
+      
+      const saveBtn = document.getElementById('saveBtn');
+      const originalText = saveBtn.textContent;
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Menyimpan...";
+      
+      const data = {
+        kecamatan: kecamatan,
+        desa: desa,
+        dusun: dusun,
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        timestamp: new Date()
+      };
+      
+      google.script.run
+        .withSuccessHandler(() => {
+          saveBtn.textContent = "Data Tersimpan!";
+          setTimeout(() => {
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
+          }, 2000);
+          
+          // Reset form
+          document.getElementById('dusun').value = "";
+          document.getElementById('locationStatus').innerHTML = "✅ Data berhasil disimpan! Klik 'Ambil Lokasi' untuk data baru";
+          document.getElementById('locationStatus').className = "status success";
+          document.getElementById('locationData').style.display = 'none';
+        })
+        .withFailureHandler((error) => {
+          saveBtn.textContent = originalText;
+          saveBtn.disabled = false;
+          alert(`Gagal menyimpan data: ${error.message}`);
+        })
+        .saveData(data);
+    }
+
+    // Error handler
+    function showError(error) {
+      alert(`Terjadi kesalahan: ${error.message}`);
+      console.error(error);
+    }
+  </script>
+</body>
+</html>
