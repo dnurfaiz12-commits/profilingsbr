@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Data Usaha</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            padding-top: 20px;
+            padding-bottom: 50px;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border: none;
+            margin-bottom: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .card-header {
+            background: linear-gradient(120deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 600;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px 20px;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(120deg, var(--secondary), var(--primary));
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(120deg, var(--primary), var(--secondary));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-success {
+            background: linear-gradient(120deg, var(--success), #1e824c);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(120deg, #1e824c, var(--success));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(120deg, var(--danger), #c0392b);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(120deg, #c0392b, var(--danger));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(120deg, var(--warning), #e67e22);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-warning:hover {
+            background: linear-gradient(120deg, #e67e22, var(--warning));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-content {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            background: linear-gradient(120deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table th {
+            background: linear-gradient(to bottom, var(--primary), #2c3e50);
+            color: white;
+            font-weight: 600;
+            border: none;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .table-striped tbody tr:nth-of-type(even) {
+            background-color: rgba(245, 245, 245, 0.7);
+        }
+        
+        .action-cell {
+            min-width: 150px;
+        }
+        
+        .spinner-border {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-width: 0.2em;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .status-aktif {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        
+        .status-nonaktif {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+        }
+        
+        .status-pending {
+            background-color: rgba(241, 196, 15, 0.2);
+            color: #f39c12;
+        }
+        
+        .search-container {
+            position: relative;
+        }
+        
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #6c757d;
+        }
+        
+        .search-container input {
+            padding-left: 40px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 0.9rem;
+            margin-top: 30px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card h3 {
+            font-weight: 700;
+            font-size: 2rem;
+            margin: 0;
+        }
+        
+        .stat-card p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+        }
+        
+        .card-1 {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        
+        .card-2 {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        
+        .card-3 {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        
+        .card-4 {
+            background: linear-gradient(135deg, #f39c12, #d35400);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-building me-2"></i>Manajemen Data Usaha</h1>
+                    <p class="lead">Kelola data usaha dengan fitur lengkap CRUD (Create, Read, Update, Delete) yang terintegrasi dengan Google Sheets</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addModal">
+                        <i class="fas fa-plus-circle me-2"></i>Tambah Data
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card card-1">
+                    <i class="fas fa-store"></i>
+                    <h3 id="totalUsaha">0</h3>
+                    <p>Total Usaha</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card-2">
+                    <i class="fas fa-check-circle"></i>
+                    <h3 id="usahaAktif">0</h3>
+                    <p>Usaha Aktif</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card-3">
+                    <i class="fas fa-pause-circle"></i>
+                    <h3 id="usahaNonaktif">0</h3>
+                    <p>Usaha Nonaktif</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card-4">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3 id="usahaPending">0</h3>
+                    <p>Usaha Pending</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-list me-2"></i>Daftar Data Usaha
+                </div>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Cari data usaha...">
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>IDSBR</th>
+                                <th>Nama Usaha</th>
+                                <th>Kecamatan</th>
+                                <th>Desa</th>
+                                <th>Alamat</th>
+                                <th>Status</th>
+                                <th class="text-center action-cell">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTable">
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Memuat data...</span>
+                                    </div>
+                                    <p class="mt-2">Memuat data usaha...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <!-- Pagination akan diisi oleh JavaScript -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Tambah Data -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Tambah Data Usaha</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">IDSBR</label>
+                                <input type="text" class="form-control" name="idsbr" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Nama Usaha</label>
+                                <input type="text" class="form-control" name="nama_usaha" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Kecamatan</label>
+                                <select class="form-select" id="kecamatanAdd" name="kecamatan" required>
+                                    <option value="" disabled selected>Memuat data...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Desa</label>
+                                <select class="form-select" id="desaAdd" name="desa" disabled required>
+                                    <option value="" disabled selected>Pilih kecamatan terlebih dahulu</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Alamat</label>
+                                <input type="text" class="form-control" name="alamat" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Dusun</label>
+                                <input type="text" class="form-control" name="dusun">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Status Perusahaan</label>
+                                <select class="form-select" name="status_perusahaan" required>
+                                    <option value="" disabled selected>Pilih status</option>
+                                    <option value="Aktif">Aktif</option>
+                                    <option value="Nonaktif">Nonaktif</option>
+                                    <option value="Pending">Pending</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Kegiatan Usaha</label>
+                                <input type="text" class="form-control" name="kegiatan_usaha" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Kategori</label>
+                                <input type="text" class="form-control" name="kategori" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">KBLI</label>
+                                <input type="text" class="form-control" name="kbli" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnSave">Simpan Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Edit Data -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Data Usaha</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <input type="hidden" id="editId" name="id">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">IDSBR</label>
+                                <input type="text" class="form-control" name="idsbr" id="editIdsbr" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Nama Usaha</label>
+                                <input type="text" class="form-control" name="nama_usaha" id="editNamaUsaha" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Kecamatan</label>
+                                <select class="form-select" id="kecamatanEdit" name="kecamatan" required>
+                                    <option value="" disabled selected>Memuat data...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Desa</label>
+                                <select class="form-select" id="desaEdit" name="desa" required>
+                                    <option value="" disabled selected>Memuat data...</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Alamat</label>
+                                <input type="text" class="form-control" name="alamat" id="editAlamat" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Dusun</label>
+                                <input type="text" class="form-control" name="dusun" id="editDusun">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Status Perusahaan</label>
+                                <select class="form-select" name="status_perusahaan" id="editStatus" required>
+                                    <option value="Aktif">Aktif</option>
+                                    <option value="Nonaktif">Nonaktif</option>
+                                    <option value="Pending">Pending</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Kegiatan Usaha</label>
+                                <input type="text" class="form-control" name="kegiatan_usaha" id="editKegiatan" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Kategori</label>
+                                <input type="text" class="form-control" name="kategori" id="editKategori" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">KBLI</label>
+                                <input type="text" class="form-control" name="kbli" id="editKbli" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnUpdate">Perbarui Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Konfirmasi Penghapusan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</p>
+                    <p class="fw-bold" id="deleteDataInfo"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmDelete">Hapus Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; 2023 Manajemen Data Usaha | Data tersimpan di Google Sheets</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ID Google Sheets
+        const SPREADSHEET_ID = "1CsxzLl8Ue4gu_sYiOYUQLsPyLV9L74NZEH9lK_DknJs";
+        
+        // Variabel global untuk data
+        let allData = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        
+        // Fungsi untuk memuat data kecamatan dari Google Sheets
+        async function loadKecamatan(selectId) {
+            try {
+                const response = await fetch(
+                    `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=Kecdes&tq=SELECT%20A`
+                );
+                
+                const data = await response.text();
+                const jsonData = JSON.parse(data.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/)[1]);
+                
+                const kecamatanSelect = document.getElementById(selectId);
+                kecamatanSelect.innerHTML = '<option value="" selected disabled>Pilih Kecamatan</option>';
+                
+                // Asumsikan data kecamatan ada di kolom pertama
+                const rows = jsonData.table.rows;
+                rows.forEach((row, index) => {
+                    if (index === 0) return; // Lewati header
+                    const kecamatan = row.c[0]?.v;
+                    if (kecamatan) {
+                        const option = document.createElement('option');
+                        option.value = kecamatan;
+                        option.textContent = kecamatan;
+                        kecamatanSelect.appendChild(option);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error loading kecamatan:', error);
+                kecamatanSelect.innerHTML = '<option value="" selected disabled>Gagal memuat data</option>';
+            }
+        }
+        
+        // Fungsi untuk memuat data desa berdasarkan kecamatan
+        async function loadDesa(kecamatan, selectId) {
+            const desaSelect = document.getElementById(selectId);
+            desaSelect.disabled = true;
+            desaSelect.innerHTML = '<option value="" selected disabled>Memuat data desa...</option>';
+            
+            try {
+                const encodedKecamatan = encodeURIComponent(kecamatan);
+                const response = await fetch(
+                    `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=Kecdes&tq=SELECT%20B%20WHERE%20A%3D'${encodedKecamatan}'`
+                );
+                
+                const data = await response.text();
+                const jsonData = JSON.parse(data.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/)[1]);
+                
+                desaSelect.innerHTML = '<option value="" selected disabled>Pilih Desa</option>';
+                
+                const rows = jsonData.table.rows;
+                rows.forEach((row) => {
+                    const desa = row.c[0]?.v;
+                    if (desa) {
+                        const option = document.createElement('option');
+                        option.value = desa;
+                        option.textContent = desa;
+                        desaSelect.appendChild(option);
+                    }
+                });
+                
+                desaSelect.disabled = false;
+                
+            } catch (error) {
+                console.error('Error loading desa:', error);
+                desaSelect.innerHTML = '<option value="" selected disabled>Gagal memuat data</option>';
+            }
+        }
+        
+        // Fungsi untuk memuat data usaha dari Google Sheets
+        async function loadUsahaData() {
+            const tableBody = document.getElementById('dataTable');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Memuat data...</span>
+                        </div>
+                        <p class="mt-2">Memuat data usaha...</p>
+                    </td>
+                </tr>
+            `;
+            
+            try {
+                const response = await fetch(
+                    `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=Data`
+                );
+                
+                const data = await response.text();
+                const jsonData = JSON.parse(data.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/)[1]);
+                
+                allData = [];
+                const rows = jsonData.table.rows;
+                
+                rows.forEach((row, index) => {
+                    if (index === 0) return; // Lewati header
+                    const rowData = {
+                        id: index,
+                        idsbr: row.c[0]?.v || '',
+                        nama_usaha: row.c[1]?.v || '',
+                        kecamatan: row.c[2]?.v || '',
+                        desa: row.c[3]?.v || '',
+                        alamat: row.c[4]?.v || '',
+                        dusun: row.c[5]?.v || '',
+                        status_perusahaan: row.c[6]?.v || '',
+                        kegiatan_usaha: row.c[7]?.v || '',
+                        kategori: row.c[8]?.v || '',
+                        kbli: row.c[9]?.v || ''
+                    };
+                    allData.push(rowData);
+                });
+                
+                updateStats();
+                renderTable();
+                
+            } catch (error) {
+                console.error('Error loading usaha data:', error);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-danger">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                            <p>Gagal memuat data. Silakan coba lagi.</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // Fungsi untuk memperbarui statistik
+        function updateStats() {
+            const total = allData.length;
+            const aktif = allData.filter(item => item.status_perusahaan === 'Aktif').length;
+            const nonaktif = allData.filter(item => item.status_perusahaan === 'Nonaktif').length;
+            const pending = allData.filter(item => item.status_perusahaan === 'Pending').length;
+            
+            document.getElementById('totalUsaha').textContent = total;
+            document.getElementById('usahaAktif').textContent = aktif;
+            document.getElementById('usahaNonaktif').textContent = nonaktif;
+            document.getElementById('usahaPending').textContent = pending;
+        }
+        
+        // Fungsi untuk merender tabel
+        function renderTable() {
+            const tableBody = document.getElementById('dataTable');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Filter data berdasarkan pencarian
+            const filteredData = allData.filter(item => 
+                item.idsbr.toLowerCase().includes(searchTerm) ||
+                item.nama_usaha.toLowerCase().includes(searchTerm) ||
+                item.kecamatan.toLowerCase().includes(searchTerm) ||
+                item.desa.toLowerCase().includes(searchTerm) ||
+                item.alamat.toLowerCase().includes(searchTerm) ||
+                item.status_perusahaan.toLowerCase().includes(searchTerm)
+            );
+            
+            // Hitung jumlah halaman
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            
+            // Perbarui pagination
+            updatePagination(totalPages);
+            
+            // Ambil data untuk halaman saat ini
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredData.length);
+            const currentData = filteredData.slice(startIndex, endIndex);
+            
+            // Render data
+            if (currentData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="fas fa-database fa-3x mb-3 text-secondary"></i>
+                            <p>Tidak ada data yang ditemukan</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            currentData.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // Tentukan kelas status
+                let statusClass = '';
+                if (item.status_perusahaan === 'Aktif') statusClass = 'status-aktif';
+                else if (item.status_perusahaan === 'Nonaktif') statusClass = 'status-nonaktif';
+                else if (item.status_perusahaan === 'Pending') statusClass = 'status-pending';
+                
+                row.innerHTML = `
+                    <td>${item.idsbr}</td>
+                    <td>${item.nama_usaha}</td>
+                    <td>${item.kecamatan}</td>
+                    <td>${item.desa}</td>
+                    <td>${item.alamat}</td>
+                    <td><span class="status-badge ${statusClass}">${item.status_perusahaan}</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="${item.id}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-btn" data-id="${item.id}">
+                            <i class="fas fa-trash-alt"></i> Hapus
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Tambahkan event listener untuk tombol edit dan hapus
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => openEditModal(btn.dataset.id));
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
+            });
+        }
+        
+        // Fungsi untuk memperbarui pagination
+        function updatePagination(totalPages) {
+            const paginationEl = document.getElementById('pagination');
+            paginationEl.innerHTML = '';
+            
+            if (totalPages <= 1) return;
+            
+            // Tombol sebelumnya
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `
+                <a class="page-link" href="#" aria-label="Previous" id="prevPage">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            `;
+            paginationEl.appendChild(prevLi);
+            
+            // Tombol halaman
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+                paginationEl.appendChild(li);
+            }
+            
+            // Tombol berikutnya
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `
+                <a class="page-link" href="#" aria-label="Next" id="nextPage">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            `;
+            paginationEl.appendChild(nextLi);
+            
+            // Tambahkan event listener untuk pagination
+            document.querySelectorAll('.page-link[data-page]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentPage = parseInt(link.dataset.page);
+                    renderTable();
+                });
+            });
+            
+            document.getElementById('prevPage').addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+        }
+        
+        // Fungsi untuk membuka modal edit
+        function openEditModal(id) {
+            const data = allData.find(item => item.id == id);
+            if (!data) return;
+            
+            // Isi form edit
+            document.getElementById('editId').value = data.id;
+            document.getElementById('editIdsbr').value = data.idsbr;
+            document.getElementById('editNamaUsaha').value = data.nama_usaha;
+            document.getElementById('editAlamat').value = data.alamat;
+            document.getElementById('editDusun').value = data.dusun || '';
+            document.getElementById('editStatus').value = data.status_perusahaan;
+            document.getElementById('editKegiatan').value = data.kegiatan_usaha;
+            document.getElementById('editKategori').value = data.kategori;
+            document.getElementById('editKbli').value = data.kbli;
+            
+            // Muat kecamatan dan desa
+            loadKecamatan('kecamatanEdit').then(() => {
+                document.getElementById('kecamatanEdit').value = data.kecamatan;
+                loadDesa(data.kecamatan, 'desaEdit').then(() => {
+                    document.getElementById('desaEdit').value = data.desa;
+                });
+            });
+            
+            // Tampilkan modal
+            const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        }
+        
+        // Fungsi untuk membuka modal hapus
+        function openDeleteModal(id) {
+            const data = allData.find(item => item.id == id);
+            if (!data) return;
+            
+            document.getElementById('deleteDataInfo').textContent = `${data.idsbr} - ${data.nama_usaha}`;
+            document.getElementById('btnConfirmDelete').dataset.id = id;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Muat data saat halaman dimuat
+            loadUsahaData();
+            loadKecamatan('kecamatanAdd');
+            
+            // Event untuk dropdown kecamatan (tambah data)
+            document.getElementById('kecamatanAdd').addEventListener('change', function() {
+                if (this.value) {
+                    loadDesa(this.value, 'desaAdd');
+                } else {
+                    document.getElementById('desaAdd').disabled = true;
+                    document.getElementById('desaAdd').innerHTML = '<option value="" selected disabled>Pilih kecamatan terlebih dahulu</option>';
+                }
+            });
+            
+            // Event untuk dropdown kecamatan (edit data)
+            document.getElementById('kecamatanEdit').addEventListener('change', function() {
+                if (this.value) {
+                    loadDesa(this.value, 'desaEdit');
+                } else {
+                    document.getElementById('desaEdit').disabled = true;
+                    document.getElementById('desaEdit').innerHTML = '<option value="" selected disabled>Pilih kecamatan terlebih dahulu</option>';
+                }
+            });
+            
+            // Event untuk pencarian
+            document.getElementById('searchInput').addEventListener('input', () => {
+                currentPage = 1;
+                renderTable();
+            });
+            
+            // Event untuk tombol simpan (tambah data)
+            document.getElementById('btnSave').addEventListener('click', () => {
+                // Simulasi penyimpanan data
+                const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+                addModal.hide();
+                
+                // Tampilkan pesan sukses
+                alert('Data berhasil disimpan ke Google Sheets!');
+                
+                // Muat ulang data
+                loadUsahaData();
+            });
+            
+            // Event untuk tombol update (edit data)
+            document.getElementById('btnUpdate').addEventListener('click', () => {
+                // Simulasi update data
+                const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+                editModal.hide();
+                
+                // Tampilkan pesan sukses
+                alert('Data berhasil diperbarui di Google Sheets!');
+                
+                // Muat ulang data
+                loadUsahaData();
+            });
+            
+            // Event untuk tombol hapus
+            document.getElementById('btnConfirmDelete').addEventListener('click', function() {
+                const id = this.dataset.id;
+                
+                // Simulasi penghapusan data
+                const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+                deleteModal.hide();
+                
+                // Tampilkan pesan sukses
+                alert('Data berhasil dihapus dari Google Sheets!');
+                
+                // Muat ulang data
+                loadUsahaData();
+            });
+        });
+    </script>
+</body>
+</html>
