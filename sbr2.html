@@ -1,4 +1,251 @@
 <!DOCTYPE html>
+var SPREADSHEET_ID = "1CsxzLl8Ue4gu_sYiOYUQLsPyLV9L74NZEH9lK_DknJs";
+var SHEET_DATA = "Data";
+var SHEET_KECDES = "Kecdes";
+
+function doGet(e) {
+  return handleRequest(e);
+}
+
+function doPost(e) {
+  return handleRequest(e);
+}
+
+function handleRequest(e) {
+  var action = e.parameter.action;
+  
+  try {
+    switch(action) {
+      case 'readKecamatan':
+        return readKecamatan();
+      case 'readDesa':
+        var kecamatan = e.parameter.kecamatan;
+        return readDesa(kecamatan);
+      case 'readUsaha':
+        return readUsaha();
+      case 'createUsaha':
+        var data = JSON.parse(e.postData.contents);
+        return createUsaha(data);
+      case 'updateUsaha':
+        var data = JSON.parse(e.postData.contents);
+        return updateUsaha(data);
+      case 'deleteUsaha':
+        var id = e.parameter.id;
+        return deleteUsaha(id);
+      case 'getUsahaById':
+        var id = e.parameter.id;
+        return getUsahaById(id);
+      case 'getStats':
+        return getStats();
+      default:
+        return ContentService.createTextOutput(JSON.stringify({error: "Invalid action"})).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({error: error.message})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function readKecamatan() {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_KECDES);
+  var data = sheet.getDataRange().getValues();
+  
+  // Ambil kecamatan (kolom pertama, lewati header)
+  var kecamatan = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0]) {
+      kecamatan.push(data[i][0]);
+    }
+  }
+  
+  // Hapus duplikat
+  kecamatan = [...new Set(kecamatan)];
+  
+  return ContentService.createTextOutput(JSON.stringify(kecamatan)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function readDesa(kecamatan) {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_KECDES);
+  var data = sheet.getDataRange().getValues();
+  
+  var desa = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === kecamatan && data[i][1]) {
+      desa.push(data[i][1]);
+    }
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify(desa)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function readUsaha() {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_DATA);
+  var data = sheet.getDataRange().getValues();
+  
+  var hasil = [];
+  // Lewati header
+  for (var i = 1; i < data.length; i++) {
+    hasil.push({
+      id: i, // Gunakan nomor baris sebagai ID sementara
+      idsbr: data[i][0],
+      nama_usaha: data[i][1],
+      kecamatan: data[i][2],
+      desa: data[i][3],
+      alamat: data[i][4],
+      dusun: data[i][5],
+      status_perusahaan: data[i][6],
+      kegiatan_usaha: data[i][7],
+      kategori: data[i][8],
+      kbli: data[i][9]
+    });
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify(hasil)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function getUsahaById(id) {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_DATA);
+  
+  // Konversi id ke nomor baris
+  var row = parseInt(id) + 1; // +1 karena header
+  
+  // Validasi row
+  if (row < 2 || row > sheet.getLastRow()) {
+    throw new Error("ID tidak valid");
+  }
+  
+  var data = sheet.getRange(row, 1, 1, 10).getValues()[0];
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    id: id,
+    idsbr: data[0],
+    nama_usaha: data[1],
+    kecamatan: data[2],
+    desa: data[3],
+    alamat: data[4],
+    dusun: data[5],
+    status_perusahaan: data[6],
+    kegiatan_usaha: data[7],
+    kategori: data[8],
+    kbli: data[9]
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function createUsaha(data) {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_DATA);
+  
+  // Validasi data
+  if (!data.idsbr || !data.nama_usaha || !data.kecamatan || !data.desa || !data.alamat) {
+    throw new Error("Data tidak lengkap");
+  }
+  
+  // Tambahkan baris baru di akhir
+  sheet.appendRow([
+    data.idsbr,
+    data.nama_usaha,
+    data.kecamatan,
+    data.desa,
+    data.alamat,
+    data.dusun || "",
+    data.status_perusahaan || "Aktif",
+    data.kegiatan_usaha || "",
+    data.kategori || "",
+    data.kbli || ""
+  ]);
+  
+  // Dapatkan ID baris baru
+  var newRow = sheet.getLastRow();
+  var newId = newRow - 1; // Kurangi 1 karena header
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    success: true,
+    message: "Data berhasil ditambahkan",
+    id: newId
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function updateUsaha(data) {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_DATA);
+  
+  // Konversi id ke nomor baris
+  var row = parseInt(data.id) + 1; // +1 karena header
+  
+  // Validasi row
+  if (row < 2 || row > sheet.getLastRow()) {
+    throw new Error("ID tidak valid");
+  }
+  
+  // Update data
+  sheet.getRange(row, 1, 1, 10).setValues([[
+    data.idsbr,
+    data.nama_usaha,
+    data.kecamatan,
+    data.desa,
+    data.alamat,
+    data.dusun || "",
+    data.status_perusahaan || "Aktif",
+    data.kegiatan_usaha || "",
+    data.kategori || "",
+    data.kbli || ""
+  ]]);
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    success: true,
+    message: "Data berhasil diperbarui"
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function deleteUsaha(id) {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_DATA);
+  
+  // Konversi id ke nomor baris
+  var row = parseInt(id) + 1; // +1 karena header
+  
+  // Validasi row
+  if (row < 2 || row > sheet.getLastRow()) {
+    throw new Error("ID tidak valid");
+  }
+  
+  // Hapus baris
+  sheet.deleteRow(row);
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    success: true,
+    message: "Data berhasil dihapus"
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function getStats() {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_DATA);
+  var data = sheet.getDataRange().getValues();
+  
+  var total = data.length - 1; // Kurangi header
+  var aktif = 0;
+  var nonaktif = 0;
+  var pending = 0;
+  
+  // Lewati header
+  for (var i = 1; i < data.length; i++) {
+    var status = data[i][6];
+    if (status === "Aktif") aktif++;
+    else if (status === "Nonaktif") nonaktif++;
+    else if (status === "Pending") pending++;
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    total: total,
+    aktif: aktif,
+    nonaktif: nonaktif,
+    pending: pending
+  })).setMimeType(ContentService.MimeType.JSON);
+}
 <html lang="id">
 <head>
     <meta charset="UTF-8">
