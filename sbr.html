@@ -1,343 +1,1940 @@
-<!-- index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 20px; 
-      max-width: 600px; 
-      margin: 0 auto; 
-      background-color: #f5f5f5;
-    }
-    .card {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      padding: 25px;
-      margin-top: 20px;
-    }
-    h1 {
-      color: #1a73e8;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .form-group { 
-      margin-bottom: 20px; 
-    }
-    label { 
-      display: block; 
-      margin-bottom: 8px; 
-      font-weight: 600;
-      color: #202124;
-    }
-    select, input { 
-      width: 100%; 
-      padding: 12px; 
-      box-sizing: border-box; 
-      border: 1px solid #dadce0;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    select:focus, input:focus {
-      border-color: #1a73e8;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
-    }
-    button { 
-      background-color: #1a73e8; 
-      color: white; 
-      padding: 12px 24px; 
-      border: none; 
-      border-radius: 4px;
-      cursor: pointer; 
-      font-size: 16px;
-      font-weight: 600;
-      width: 100%;
-      transition: background-color 0.2s;
-    }
-    button:hover {
-      background-color: #1765cc;
-    }
-    button:disabled { 
-      background-color: #bdc1c6; 
-      cursor: not-allowed;
-    }
-    .status { 
-      margin: 20px 0; 
-      padding: 15px; 
-      border-radius: 4px; 
-      text-align: center;
-      font-size: 15px;
-    }
-    .success { 
-      background-color: #e6f4ea; 
-      color: #137333; 
-      border: 1px solid #b7e1cd;
-    }
-    .error { 
-      background-color: #fce8e6; 
-      color: #c5221f; 
-      border: 1px solid #f5c0b8;
-    }
-    .info {
-      background-color: #e8f0fe;
-      color: #1967d2;
-      border: 1px solid #c2e7ff;
-    }
-    .location-data {
-      background-color: #f8f9fa;
-      padding: 15px;
-      border-radius: 4px;
-      margin-top: 15px;
-      font-size: 14px;
-      display: none;
-    }
-    .flex-row {
-      display: flex;
-      gap: 15px;
-    }
-    .flex-row > div {
-      flex: 1;
-    }
-    .spinner {
-      border: 4px solid rgba(0, 0, 0, 0.1);
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      border-left-color: #1a73e8;
-      animation: spin 1s linear infinite;
-      display: inline-block;
-      vertical-align: middle;
-      margin-right: 10px;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Updating Direktori Usaha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .login-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .hover-scale { transition: transform 0.2s; }
+        .hover-scale:hover { transform: scale(1.02); }
+        .modal-backdrop { backdrop-filter: blur(5px); }
+        .loading { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.5s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .float { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        
+        /* Real-time update animations */
+        #dashboardSection {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        canvas {
+            transition: all 0.4s ease-in-out;
+        }
+        
+        .stat-card-update {
+            animation: statUpdate 0.8s ease-in-out;
+        }
+        
+        @keyframes statUpdate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+            100% { transform: scale(1); }
+        }
+    </style>
 </head>
-<body>
-  <h1>Geotagging Lokasi</h1>
-  
-  <div class="card">
-    <div class="form-group">
-      <label for="kecamatan">Kecamatan:</label>
-      <select id="kecamatan" onchange="loadDesa()">
-        <option value="">-- Pilih Kecamatan --</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label for="desa">Desa:</label>
-      <select id="desa" disabled>
-        <option value="">-- Pilih Desa --</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label for="dusun">Dusun:</label>
-      <input type="text" id="dusun" placeholder="Masukkan nama dusun">
-    </div>
-    
-    <div id="locationStatus" class="status info">
-      Klik tombol "Ambil Lokasi" untuk mendapatkan koordinat GPS
-    </div>
-    
-    <div id="locationData" class="location-data">
-      <strong>Koordinat:</strong><br>
-      <span id="coords"></span><br>
-      <strong>Akurasi:</strong> <span id="accuracy"></span> meter
-    </div>
-    
-    <div class="flex-row">
-      <div>
-        <button id="getLocationBtn" onclick="getLocation()" disabled>Ambil Lokasi</button>
-      </div>
-      <div>
-        <button id="saveBtn" onclick="saveData()" disabled>Simpan Data</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Inisialisasi dropdown kecamatan saat halaman dimuat
-    document.addEventListener('DOMContentLoaded', function() {
-      // Tampilkan status loading
-      const kecamatanSelect = document.getElementById('kecamatan');
-      kecamatanSelect.innerHTML = '<option value="">Loading data...</option>';
-      
-      google.script.run
-        .withSuccessHandler(populateKecamatan)
-        .withFailureHandler(showError)
-        .getKecamatanList();
-    });
-
-    // Populate kecamatan dropdown
-    function populateKecamatan(kecamatanList) {
-      const select = document.getElementById('kecamatan');
-      select.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
-      
-      kecamatanList.forEach(kecamatan => {
-        const option = document.createElement('option');
-        option.value = kecamatan;
-        option.textContent = kecamatan;
-        select.appendChild(option);
-      });
-    }
-
-    // Load desa berdasarkan kecamatan yang dipilih
-    function loadDesa() {
-      const kecamatan = document.getElementById('kecamatan').value;
-      const desaSelect = document.getElementById('desa');
-      
-      if (!kecamatan) {
-        desaSelect.disabled = true;
-        desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
-        document.getElementById('getLocationBtn').disabled = true;
-        return;
-      }
-      
-      desaSelect.disabled = true;
-      desaSelect.innerHTML = '<option value="">Loading data...</option>';
-      
-      google.script.run
-        .withSuccessHandler(populateDesa)
-        .withFailureHandler(showError)
-        .getDesaListByKecamatan(kecamatan);
-    }
-
-    // Populate desa dropdown
-    function populateDesa(desaList) {
-      const select = document.getElementById('desa');
-      select.innerHTML = '<option value="">-- Pilih Desa --</option>';
-      
-      desaList.forEach(desa => {
-        const option = document.createElement('option');
-        option.value = desa;
-        option.textContent = desa;
-        select.appendChild(option);
-      });
-      
-      select.disabled = false;
-      
-      // Aktifkan tombol ambil lokasi jika desa dipilih
-      select.addEventListener('change', function() {
-        document.getElementById('getLocationBtn').disabled = !this.value;
-      });
-    }
-
-    // Get geolocation
-    function getLocation() {
-      const statusDiv = document.getElementById('locationStatus');
-      statusDiv.innerHTML = '<div class="spinner"></div> Mengambil lokasi...';
-      statusDiv.className = "status info";
-      
-      document.getElementById('locationData').style.display = 'none';
-      document.getElementById('saveBtn').disabled = true;
-      
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          position => {
-            statusDiv.innerHTML = "✅ Lokasi berhasil diambil!";
-            statusDiv.className = "status success";
+<body class="bg-gray-50 min-h-screen">
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen login-gradient flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl card-shadow max-w-md w-full p-8 fade-in">
+            <div class="text-center mb-8">
+                <div class="float mb-4">
+                    <img src="https://iili.io/FLp3gS4.png" alt="Logo" class="h-16 w-16 mx-auto rounded-xl shadow-lg" onerror="this.src=''; this.alt='Logo tidak dapat dimuat'; this.style.display='none';">
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">Updating Direktori Usaha</h1>
+                <p class="text-gray-600">BPS Kabupaten Samosir</p>
+            </div>
             
-            // Tampilkan data lokasi
-            const coordsEl = document.getElementById('coords');
-            const accuracyEl = document.getElementById('accuracy');
-            coordsEl.textContent = `${position.coords.latitude}, ${position.coords.longitude}`;
-            accuracyEl.textContent = Math.round(position.coords.accuracy);
-            document.getElementById('locationData').style.display = 'block';
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user mr-2"></i>NIP
+                    </label>
+                    <input type="text" id="loginNip" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                           placeholder="Masukkan NIP Anda">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-lock mr-2"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="loginPassword" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
+                               placeholder="Masukkan Password Anda">
+                        <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                            <i id="passwordToggle" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span id="loginErrorText">NIP atau password salah!</span>
+                </div>
+                
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105 flex items-center justify-center">
+                    <i id="loginSpinner" class="fas fa-spinner loading hidden mr-2"></i>
+                    <span id="loginButtonText">Masuk</span>
+                </button>
+            </form>
             
-            document.getElementById('saveBtn').disabled = false;
-            window.currentPosition = position;
-          },
-          error => {
-            let errorMessage = "❌ Gagal mengambil lokasi: ";
-            switch(error.code) {
-              case error.PERMISSION_DENIED:
-                errorMessage += "Izin ditolak pengguna";
-                break;
-              case error.POSITION_UNAVAILABLE:
-                errorMessage += "Informasi lokasi tidak tersedia";
-                break;
-              case error.TIMEOUT:
-                errorMessage += "Permintaan lokasi timeout";
-                break;
-              default:
-                errorMessage += "Error tidak diketahui";
+            <div class="mt-6 text-center text-sm text-gray-500">
+                <i class="fas fa-shield-alt mr-1"></i>
+                Sistem keamanan terjamin
+            </div>
+            
+            <div class="mt-4 text-center text-xs text-gray-400">
+                <p><strong>Petunjuk Login:</strong></p>
+                <p>Username: NIP Anda</p>
+                <p>Password: NIP yang sama</p>
+                <p class="mt-2 text-blue-600" id="debugInfo">Memuat data pegawai...</p>
+                <div class="mt-3 p-2 bg-green-50 border border-green-200 rounded text-green-800">
+                    <p class="text-xs"><strong>Status:</strong> Terhubung ke Google Sheets secara real-time.</p>
+                    <p class="text-xs">Semua perubahan data akan langsung tersimpan ke Google Sheets.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Header -->
+        <header class="gradient-bg text-white shadow-lg">
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4 relative">
+                        <div class="flex items-center space-x-4 cursor-pointer hover:bg-blue-600 hover:bg-opacity-30 rounded-lg p-2 transition-colors" onclick="toggleMainMenu()">
+                            <img src="https://iili.io/FLp3gS4.png" alt="Logo" class="h-12 w-12 rounded-lg shadow-md" onerror="this.src=''; this.alt='Logo tidak dapat dimuat'; this.style.display='none';">
+                            <div>
+                                <h1 class="text-2xl font-bold">Updating Direktori Usaha</h1>
+                                <p class="text-blue-100 text-sm">BPS Kabupaten Samosir</p>
+                            </div>
+                            <i class="fas fa-chevron-down text-blue-200 ml-2" id="mainMenuChevron"></i>
+                        </div>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="mainDropdownMenu" class="hidden absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 min-w-48 z-50">
+                            <div class="py-2">
+                                <button onclick="showDashboard(); closeMainMenu();" class="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center space-x-3 transition-colors">
+                                    <i class="fas fa-chart-bar text-blue-600"></i>
+                                    <span class="text-gray-700 font-medium">Dashboard</span>
+                                </button>
+                                <button onclick="showDirectory(); closeMainMenu();" class="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center space-x-3 transition-colors">
+                                    <i class="fas fa-building text-green-600"></i>
+                                    <span class="text-gray-700 font-medium">Direktori Perusahaan</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="text-right">
+                                <p class="text-sm font-medium" id="userWelcome">Selamat datang!</p>
+                                <p class="text-xs text-blue-200" id="userNip"></p>
+                            </div>
+                            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-colors flex items-center space-x-2" title="Logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span class="hidden sm:inline">Keluar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="container mx-auto px-6 py-8">
+            <div class="mb-8 fade-in">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Dashboard</h2>
+                <p class="text-gray-600">Ringkasan data perusahaan dan statistik</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl card-shadow p-6 hover-scale fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Total Perusahaan</p>
+                            <p class="text-3xl font-bold text-gray-900" id="totalCompanies">0</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-building text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl card-shadow p-6 hover-scale fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Perusahaan Aktif</p>
+                            <p class="text-3xl font-bold text-green-600" id="activeCompanies">0</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl card-shadow p-6 hover-scale fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Perusahaan Pindah</p>
+                            <p class="text-3xl font-bold text-yellow-600" id="movedCompanies">0</p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-full">
+                            <i class="fas fa-truck text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl card-shadow p-6 hover-scale fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Tidak Aktif</p>
+                            <p class="text-3xl font-bold text-red-600" id="inactiveCompanies">0</p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-8 mb-8">
+                <div class="bg-white rounded-xl card-shadow p-6 fade-in max-w-2xl mx-auto">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Status Perusahaan</h3>
+                    <div class="relative h-64">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="bg-white rounded-xl card-shadow p-6 fade-in">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Ringkasan Data per Kecamatan</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kecamatan</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aktif</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pindah</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tidak Aktif</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tidak Ditemukan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kecamatanSummary" class="divide-y divide-gray-200">
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Directory Section -->
+        <div id="directorySection" class="hidden">
+            <!-- Main Content -->
+            <main class="container mx-auto px-6 py-8">
+        <!-- Control Panel -->
+        <div class="bg-white rounded-xl card-shadow p-6 mb-8 fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div>
+                    <h2 class="text-2xl font-semibold text-gray-800">Direktori Perusahaan</h2>
+                    <p class="text-gray-600">Kelola data perusahaan dengan mudah</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="refreshData()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+                        <i class="fas fa-sync-alt" id="refreshIcon"></i>
+                        <span>Refresh</span>
+                    </button>
+                    <button onclick="openModal('add')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+                        <i class="fas fa-plus"></i>
+                        <span>Tambah Data</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="bg-white rounded-xl card-shadow p-6 mb-8 fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                <div class="lg:col-span-2">
+                    <input type="text" id="searchInput" placeholder="Cari berdasarkan nama usaha, alamat, atau kegiatan..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <select id="kecamatanFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Kecamatan</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="desaFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Desa</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="statusFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Status</option>
+                        <option value="Aktif">Aktif</option>
+                        <option value="Pindah">Pindah</option>
+                        <option value="Tidak Ditemukan">Tidak Ditemukan</option>
+                        <option value="Tidak Aktif">Tidak Aktif</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm text-gray-600 whitespace-nowrap">Tampilkan:</label>
+                    <select id="rowsPerPage" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="text-sm text-gray-600">baris</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="bg-white rounded-xl card-shadow overflow-hidden fade-in">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IDSBR</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Usaha</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kecamatan</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desa</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-spinner loading text-blue-500 text-2xl mb-2"></i>
+                                    <span class="text-gray-500">Memuat data...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+                    <div class="text-sm text-gray-700">
+                        Menampilkan <span id="showingStart">1</span> sampai <span id="showingEnd">25</span> dari <span id="totalRows">0</span> data
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button id="prevPage" onclick="changePage(-1)" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-chevron-left"></i> Sebelumnya
+                        </button>
+                        <div id="pageNumbers" class="flex space-x-1">
+                            <!-- Page numbers will be inserted here -->
+                        </div>
+                        <button id="nextPage" onclick="changePage(1)" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Selanjutnya <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 id="modalTitle" class="text-xl font-semibold text-gray-800">Form Data Perusahaan</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <form id="companyForm" class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">IDSBR</label>
+                        <input type="text" name="idsbr" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nama Usaha</label>
+                        <input type="text" name="nama_usaha" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kecamatan</label>
+                        <select name="kecamatan" id="kecamatanSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Pilih Kecamatan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Desa</label>
+                        <select name="desa" id="desaSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Pilih Desa</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Dusun <span class="text-gray-400 text-xs">(opsional)</span></label>
+                        <select name="dusun" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Pilih Dusun</option>
+                            <option value="Dusun 1">Dusun 1</option>
+                            <option value="Dusun 2">Dusun 2</option>
+                            <option value="Dusun 3">Dusun 3</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status Perusahaan</label>
+                        <select name="status_perusahaan" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Pilih Status</option>
+                            <option value="Aktif">Aktif</option>
+                            <option value="Pindah">Pindah</option>
+                            <option value="Tidak Ditemukan">Tidak Ditemukan</option>
+                            <option value="Tidak Aktif">Tidak Aktif</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Alamat</label>
+                        <textarea name="alamat" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kegiatan Usaha</label>
+                        <input type="text" name="kegiatan_usaha" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                        <input type="text" name="kategori" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">KBLI</label>
+                        <input type="text" name="kbli" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        let companiesData = [];
+        let regionsData = [];
+        let usersData = [];
+        let currentEditIndex = -1;
+        let currentPage = 1;
+        let rowsPerPage = 25;
+        let filteredData = [];
+        let currentUser = null;
+        let statusChart = null;
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Preload users data for login
+            loadUsersData().then(() => {
+                console.log('Users data preloaded for login');
+            });
+            
+            // Test Google Apps Script connection
+            testGoogleAppsScriptConnection();
+            
+            checkAuthStatus();
+            setupEventListeners();
+        });
+
+        function checkAuthStatus() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showMainApp();
+            } else {
+                showLoginPage();
             }
-            statusDiv.innerHTML = errorMessage;
-            statusDiv.className = "status error";
-          },
-          { 
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-          }
-        );
-      } else {
-        statusDiv.innerHTML = "❌ Geolocation tidak didukung browser ini";
-        statusDiv.className = "status error";
-      }
-    }
+        }
 
-    // Save data to sheet
-    function saveData() {
-      const kecamatan = document.getElementById('kecamatan').value;
-      const desa = document.getElementById('desa').value;
-      const dusun = document.getElementById('dusun').value;
-      const position = window.currentPosition;
-      
-      if (!kecamatan || !desa) {
-        alert("Harap pilih kecamatan dan desa terlebih dahulu!");
-        return;
-      }
-      
-      const saveBtn = document.getElementById('saveBtn');
-      const originalText = saveBtn.textContent;
-      saveBtn.disabled = true;
-      saveBtn.textContent = "Menyimpan...";
-      
-      const data = {
-        kecamatan: kecamatan,
-        desa: desa,
-        dusun: dusun,
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        accuracy: position.coords.accuracy,
-        timestamp: new Date()
-      };
-      
-      google.script.run
-        .withSuccessHandler(() => {
-          saveBtn.textContent = "Data Tersimpan!";
-          setTimeout(() => {
-            saveBtn.textContent = originalText;
-            saveBtn.disabled = false;
-          }, 2000);
-          
-          // Reset form
-          document.getElementById('dusun').value = "";
-          document.getElementById('locationStatus').innerHTML = "✅ Data berhasil disimpan! Klik 'Ambil Lokasi' untuk data baru";
-          document.getElementById('locationStatus').className = "status success";
-          document.getElementById('locationData').style.display = 'none';
-        })
-        .withFailureHandler((error) => {
-          saveBtn.textContent = originalText;
-          saveBtn.disabled = false;
-          alert(`Gagal menyimpan data: ${error.message}`);
-        })
-        .saveData(data);
-    }
+        function showLoginPage() {
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
 
-    // Error handler
-    function showError(error) {
-      alert(`Terjadi kesalahan: ${error.message}`);
-      console.error(error);
-    }
-  </script>
-</body>
+        function showMainApp() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            if (currentUser) {
+                document.getElementById('userWelcome').textContent = `Selamat datang, ${currentUser.nama || 'User'}!`;
+                document.getElementById('userNip').textContent = `NIP: ${currentUser.nip}`;
+            }
+            
+            loadRegionsData();
+            loadCompaniesData().then(() => {
+                // Ensure dashboard is updated after data loads
+                setTimeout(() => {
+                    updateDashboard();
+                }, 500);
+            });
+            showDashboard();
+        }
+
+        async function loadUsersData() {
+            const debugInfo = document.getElementById('debugInfo');
+            try {
+                if (debugInfo) debugInfo.textContent = 'Mengambil data pegawai...';
+                
+                const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTf0MY70HCayLk3ybebSrtZK8nX4j3B3Qh_3-oNCMVdWLugyNHNGPtKm2L3IMGY9Z-3HuQ3HSBLymJH/pub?gid=0&single=true&output=csv');
+                const csvText = await response.text();
+                usersData = parseCSV(csvText);
+                console.log('Users data loaded:', usersData); // Debug log
+                
+                if (debugInfo) {
+                    debugInfo.textContent = `Data pegawai berhasil dimuat (${usersData.length} pegawai)`;
+                    debugInfo.classList.remove('text-blue-600');
+                    debugInfo.classList.add('text-green-600');
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error loading users data:', error);
+                if (debugInfo) {
+                    debugInfo.textContent = 'Gagal memuat data pegawai!';
+                    debugInfo.classList.remove('text-blue-600');
+                    debugInfo.classList.add('text-red-600');
+                }
+                return false;
+            }
+        }
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('loginPassword');
+            const passwordToggle = document.getElementById('passwordToggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordToggle.classList.remove('fa-eye');
+                passwordToggle.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordToggle.classList.remove('fa-eye-slash');
+                passwordToggle.classList.add('fa-eye');
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const nip = document.getElementById('loginNip').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const loginError = document.getElementById('loginError');
+            const loginSpinner = document.getElementById('loginSpinner');
+            const loginButtonText = document.getElementById('loginButtonText');
+            
+            // Show loading
+            loginSpinner.classList.remove('hidden');
+            loginButtonText.textContent = 'Memverifikasi...';
+            loginError.classList.add('hidden');
+            
+            try {
+                // Load users data if not already loaded
+                if (usersData.length === 0) {
+                    const loaded = await loadUsersData();
+                    if (!loaded) {
+                        throw new Error('Gagal memuat data pengguna');
+                    }
+                }
+                
+                // Find user by NIP (check all possible column names)
+                const user = usersData.find(u => {
+                    const userNip = u.NIP || u.nip || u['NIP'] || u['nip'];
+                    console.log('Checking user:', userNip, 'against input:', nip); // Debug log
+                    return userNip && userNip.toString().trim() === nip.toString().trim();
+                });
+                
+                console.log('Found user:', user); // Debug log
+                
+                if (user) {
+                    const userNip = user.NIP || user.nip || user['NIP'] || user['nip'];
+                    // For this system, password is same as NIP
+                    if (userNip.toString().trim() === password.toString().trim()) {
+                        // Login successful
+                        currentUser = {
+                            nip: userNip,
+                            nama: user['Nama Pegawai'] || user['nama pegawai'] || user.Nama || user.nama || user['Nama'] || user['nama'] || user.NAMA || user['NAMA'] || userNip
+                        };
+                        
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        showMainApp();
+                    } else {
+                        // Login failed - wrong password
+                        loginError.classList.remove('hidden');
+                        document.getElementById('loginErrorText').textContent = 'Password salah! Gunakan NIP sebagai password.';
+                    }
+                } else {
+                    // Login failed - user not found
+                    loginError.classList.remove('hidden');
+                    document.getElementById('loginErrorText').textContent = 'NIP tidak ditemukan dalam database!';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                loginError.classList.remove('hidden');
+                document.getElementById('loginErrorText').textContent = 'Terjadi kesalahan saat login. Silakan coba lagi.';
+            } finally {
+                // Hide loading
+                loginSpinner.classList.add('hidden');
+                loginButtonText.textContent = 'Masuk';
+            }
+        }
+
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin keluar?')) {
+                try {
+                    // Clear user data
+                    localStorage.removeItem('currentUser');
+                    currentUser = null;
+                    
+                    // Reset login form
+                    const loginForm = document.getElementById('loginForm');
+                    if (loginForm) {
+                        loginForm.reset();
+                    }
+                    
+                    const loginError = document.getElementById('loginError');
+                    if (loginError) {
+                        loginError.classList.add('hidden');
+                    }
+                    
+                    // Reset debug info
+                    const debugInfo = document.getElementById('debugInfo');
+                    if (debugInfo) {
+                        debugInfo.textContent = 'Memuat data pegawai...';
+                        debugInfo.classList.remove('text-green-600', 'text-red-600');
+                        debugInfo.classList.add('text-blue-600');
+                    }
+                    
+                    // Reset any open modals first
+                    const modal = document.getElementById('modal');
+                    if (modal && !modal.classList.contains('hidden')) {
+                        closeModal();
+                    }
+                    
+                    // Close main menu dropdown if open
+                    closeMainMenu();
+                    
+                    // Reset body overflow
+                    document.body.style.overflow = 'auto';
+                    
+                    // Hide main app
+                    const mainApp = document.getElementById('mainApp');
+                    if (mainApp) {
+                        mainApp.classList.add('hidden');
+                    }
+                    
+                    // Show login page
+                    const loginPage = document.getElementById('loginPage');
+                    if (loginPage) {
+                        loginPage.classList.remove('hidden');
+                    }
+                    
+                    // Show logout notification
+                    showNotification('Anda telah berhasil keluar', 'success');
+                    
+                    // Clear any cached data
+                    companiesData = [];
+                    regionsData = [];
+                    filteredData = [];
+                    currentPage = 1;
+                    currentEditIndex = -1;
+                    
+                    console.log('Logout successful - redirected to login page');
+                    
+                } catch (error) {
+                    console.error('Error during logout:', error);
+                    showNotification('Terjadi kesalahan saat logout', 'error');
+                }
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('directorySection').classList.add('hidden');
+            
+            // Force dashboard update when switching to dashboard view
+            console.log('Switching to dashboard view, forcing update...');
+            setTimeout(() => {
+                updateDashboard();
+            }, 100);
+        }
+
+        function showDirectory() {
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('directorySection').classList.remove('hidden');
+            
+            // Update navigation buttons
+            document.getElementById('directoryBtn').classList.add('bg-blue-600', 'text-white');
+            document.getElementById('directoryBtn').classList.remove('hover:bg-blue-600');
+            document.getElementById('dashboardBtn').classList.remove('bg-blue-600', 'text-white');
+            document.getElementById('dashboardBtn').classList.add('hover:bg-blue-600');
+        }
+
+        function updateDashboard() {
+            console.log('Updating dashboard with', companiesData.length, 'companies');
+            
+            if (companiesData.length === 0) {
+                // Reset dashboard when no data
+                document.getElementById('totalCompanies').textContent = '0';
+                document.getElementById('activeCompanies').textContent = '0';
+                document.getElementById('movedCompanies').textContent = '0';
+                document.getElementById('inactiveCompanies').textContent = '0';
+                
+                // Clear charts
+                if (statusChart) {
+                    statusChart.destroy();
+                    statusChart = null;
+                }
+                
+                // Clear summary table
+                document.getElementById('kecamatanSummary').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                            <i class="fas fa-chart-bar text-3xl mb-2"></i><br>
+                            Belum ada data untuk ditampilkan
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Add visual feedback for real-time updates
+            const statCards = document.querySelectorAll('#dashboardSection .hover-scale');
+            statCards.forEach(card => {
+                card.classList.add('ring-2', 'ring-blue-200', 'transform', 'scale-105');
+                setTimeout(() => {
+                    card.classList.remove('ring-2', 'ring-blue-200', 'transform', 'scale-105');
+                }, 800);
+            });
+            
+            // Calculate statistics
+            const stats = {
+                total: companiesData.length,
+                aktif: companiesData.filter(c => c['Status Perusahaan'] === 'Aktif').length,
+                pindah: companiesData.filter(c => c['Status Perusahaan'] === 'Pindah').length,
+                tidakAktif: companiesData.filter(c => c['Status Perusahaan'] === 'Tidak Aktif').length,
+                tidakDitemukan: companiesData.filter(c => c['Status Perusahaan'] === 'Tidak Ditemukan').length
+            };
+            
+            console.log('Dashboard stats:', stats);
+            
+            // Update stat cards with animation
+            animateNumberChange('totalCompanies', stats.total);
+            animateNumberChange('activeCompanies', stats.aktif);
+            animateNumberChange('movedCompanies', stats.pindah);
+            animateNumberChange('inactiveCompanies', stats.tidakAktif + stats.tidakDitemukan);
+            
+            // Update charts with delay to ensure proper rendering
+            setTimeout(() => {
+                updateStatusChart(stats);
+                updateKecamatanSummary();
+            }, 200);
+        }
+
+        function animateNumberChange(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            const currentValue = parseInt(element.textContent) || 0;
+            
+            if (currentValue === newValue) return;
+            
+            const duration = 500;
+            const steps = 20;
+            const stepValue = (newValue - currentValue) / steps;
+            let currentStep = 0;
+            
+            const interval = setInterval(() => {
+                currentStep++;
+                const displayValue = Math.round(currentValue + (stepValue * currentStep));
+                element.textContent = displayValue;
+                
+                if (currentStep >= steps) {
+                    element.textContent = newValue;
+                    clearInterval(interval);
+                }
+            }, duration / steps);
+        }
+
+        function updateStatusChart(stats) {
+            const ctx = document.getElementById('statusChart');
+            if (!ctx) {
+                console.error('Status chart canvas not found');
+                return;
+            }
+            
+            const context = ctx.getContext('2d');
+            
+            if (statusChart) {
+                statusChart.destroy();
+                statusChart = null;
+            }
+            
+            // Only create chart if there's data
+            if (stats.total > 0) {
+                statusChart = new Chart(context, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Aktif', 'Pindah', 'Tidak Aktif', 'Tidak Ditemukan'],
+                        datasets: [{
+                            data: [stats.aktif, stats.pindah, stats.tidakAktif, stats.tidakDitemukan],
+                            backgroundColor: ['#10B981', '#F59E0B', '#6B7280', '#EF4444'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            animateRotate: true,
+                            duration: 1000
+                        }
+                    }
+                });
+            } else {
+                // Show empty state
+                context.clearRect(0, 0, ctx.width, ctx.height);
+                context.fillStyle = '#9CA3AF';
+                context.font = '16px Inter';
+                context.textAlign = 'center';
+                context.fillText('Belum ada data', ctx.width / 2, ctx.height / 2);
+            }
+        }
+
+
+
+        function updateKecamatanSummary() {
+            const kecamatanSummary = document.getElementById('kecamatanSummary');
+            
+            if (companiesData.length === 0) {
+                kecamatanSummary.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                            <i class="fas fa-chart-bar text-3xl mb-2"></i><br>
+                            Belum ada data untuk ditampilkan
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Get all unique kecamatan from actual company data
+            const actualKecamatans = [...new Set(companiesData.map(company => 
+                (company.Kecamatan || '').trim()
+            ))].filter(k => k !== '').sort();
+            
+            console.log('Actual kecamatans from company data:', actualKecamatans);
+            
+            // If no kecamatan data in companies, use predefined list as fallback
+            const kecamatanList = actualKecamatans.length > 0 ? actualKecamatans : [
+                'Sianjur Mula-Mula',
+                'Harian',
+                'Onan Runggu',
+                'Nainggolan',
+                'Palipi',
+                'Ronggur Nihuta',
+                'Pangururan',
+                'Simanindo',
+                'Sitio-tio'
+            ];
+            
+            // Calculate stats for each kecamatan using exact matching
+            const kecamatanStats = kecamatanList.map(kecamatan => {
+                const companies = companiesData.filter(company => {
+                    const companyKecamatan = (company.Kecamatan || '').trim();
+                    // Use exact matching first, then fallback to case-insensitive
+                    return companyKecamatan === kecamatan || 
+                           companyKecamatan.toLowerCase() === kecamatan.toLowerCase();
+                });
+                
+                const stats = {
+                    name: kecamatan,
+                    total: companies.length,
+                    aktif: companies.filter(c => (c['Status Perusahaan'] || '').trim() === 'Aktif').length,
+                    pindah: companies.filter(c => (c['Status Perusahaan'] || '').trim() === 'Pindah').length,
+                    tidakAktif: companies.filter(c => (c['Status Perusahaan'] || '').trim() === 'Tidak Aktif').length,
+                    tidakDitemukan: companies.filter(c => (c['Status Perusahaan'] || '').trim() === 'Tidak Ditemukan').length
+                };
+                
+                // Debug log for each kecamatan
+                console.log(`${kecamatan}: Total=${stats.total}, Aktif=${stats.aktif}, Pindah=${stats.pindah}, Tidak Aktif=${stats.tidakAktif}, Tidak Ditemukan=${stats.tidakDitemukan}`);
+                
+                return stats;
+            });
+            
+            // Verify total matches
+            const totalFromStats = kecamatanStats.reduce((sum, stat) => sum + stat.total, 0);
+            console.log('Total companies from kecamatan stats:', totalFromStats);
+            console.log('Total companies in data:', companiesData.length);
+            
+            // Generate table rows
+            kecamatanSummary.innerHTML = kecamatanStats.map(stats => {
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${stats.name}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 font-semibold">${stats.total}</td>
+                        <td class="px-4 py-3 text-sm text-green-600">${stats.aktif}</td>
+                        <td class="px-4 py-3 text-sm text-yellow-600">${stats.pindah}</td>
+                        <td class="px-4 py-3 text-sm text-red-600">${stats.tidakAktif}</td>
+                        <td class="px-4 py-3 text-sm text-red-600">${stats.tidakDitemukan}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Add total row at the bottom
+            const grandTotal = kecamatanStats.reduce((sum, stat) => sum + stat.total, 0);
+            const grandAktif = kecamatanStats.reduce((sum, stat) => sum + stat.aktif, 0);
+            const grandPindah = kecamatanStats.reduce((sum, stat) => sum + stat.pindah, 0);
+            const grandTidakAktif = kecamatanStats.reduce((sum, stat) => sum + stat.tidakAktif, 0);
+            const grandTidakDitemukan = kecamatanStats.reduce((sum, stat) => sum + stat.tidakDitemukan, 0);
+            
+            kecamatanSummary.innerHTML += `
+                <tr class="bg-gray-100 font-semibold border-t-2 border-gray-300">
+                    <td class="px-4 py-3 text-sm font-bold text-gray-900">TOTAL</td>
+                    <td class="px-4 py-3 text-sm font-bold text-gray-900">${grandTotal}</td>
+                    <td class="px-4 py-3 text-sm font-bold text-green-600">${grandAktif}</td>
+                    <td class="px-4 py-3 text-sm font-bold text-yellow-600">${grandPindah}</td>
+                    <td class="px-4 py-3 text-sm font-bold text-red-600">${grandTidakAktif}</td>
+                    <td class="px-4 py-3 text-sm font-bold text-red-600">${grandTidakDitemukan}</td>
+                </tr>
+            `;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('searchInput').addEventListener('input', filterData);
+            document.getElementById('statusFilter').addEventListener('change', filterData);
+            document.getElementById('kecamatanFilter').addEventListener('change', function() {
+                updateFilterDesaOptions();
+                filterData();
+            });
+            document.getElementById('desaFilter').addEventListener('change', filterData);
+            document.getElementById('rowsPerPage').addEventListener('change', changeRowsPerPage);
+            document.getElementById('kecamatanSelect').addEventListener('change', updateDesaOptions);
+            document.getElementById('companyForm').addEventListener('submit', handleFormSubmit);
+        }
+
+        async function loadRegionsData() {
+            try {
+                console.log('Loading regions data...');
+                const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQx6miPvk6zxWh0p5K1XBZ5YAOgl8-jaugAtYxbiVMQMOxGb6xKlL6WcExV-gN6CgC21jrmb4q_z9lt/pub?gid=0&single=true&output=csv');
+                const csvText = await response.text();
+                console.log('Raw CSV text (first 500 chars):', csvText.substring(0, 500));
+                
+                regionsData = parseCSV(csvText);
+                console.log('Parsed regions data:', regionsData.slice(0, 5)); // Show first 5 rows
+                console.log('Total regions data rows:', regionsData.length);
+                
+                if (regionsData.length > 0) {
+                    console.log('Sample region data structure:', Object.keys(regionsData[0]));
+                }
+                
+                populateKecamatanOptions();
+            } catch (error) {
+                console.error('Error loading regions data:', error);
+                showNotification('Gagal memuat data wilayah. Dropdown kecamatan-desa mungkin tidak berfungsi.', 'error');
+            }
+        }
+
+        // Google Sheets Configuration
+        const GOOGLE_SHEETS_ID = '1sN2yl01-hfkCXVNlFh9xHOpVmGhwT6B69IXh_eO_kZ0';
+        const SHEET_NAME = 'Direktori';
+        // Real Google Apps Script deployment URL
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwLDnf_CGCi2x3Hsev_vsweO_7JBCQhtl-7uFwPi6UL8gIevlA_bUgMhGr4Y7_DPbf5JA/exec';
+
+        async function loadCompaniesData() {
+            try {
+                // Load from the Google Sheet (read-only public CSV)
+                const response = await fetch(`https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`);
+                const csvText = await response.text();
+                companiesData = parseCSV(csvText);
+                console.log('Companies data loaded:', companiesData.length, 'companies');
+                renderTable();
+                updateDashboard();
+                return true;
+            } catch (error) {
+                console.error('Error loading companies data:', error);
+                // Try alternative CSV export URL
+                try {
+                    const alternativeResponse = await fetch(`https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/export?format=csv&gid=0`);
+                    const alternativeCsvText = await alternativeResponse.text();
+                    companiesData = parseCSV(alternativeCsvText);
+                    console.log('Companies data loaded from alternative URL:', companiesData.length, 'companies');
+                    renderTable();
+                    updateDashboard();
+                    return true;
+                } catch (alternativeError) {
+                    console.error('Alternative URL also failed:', alternativeError);
+                    const dataTable = document.getElementById('dataTable');
+                    if (dataTable) {
+                        dataTable.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="px-6 py-8 text-center text-red-500">
+                                    <i class="fas fa-exclamation-triangle mb-2"></i><br>
+                                    Gagal memuat data. Pastikan Google Sheet dapat diakses publik.
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    return false;
+                }
+            }
+        }
+
+        // Google Sheets Integration Functions
+        async function saveToGoogleSheets(action, data, rowIndex = null) {
+            try {
+                console.log('Saving to Google Sheets:', { action, data, rowIndex });
+
+                // Prepare the request payload
+                const requestBody = {
+                    action: action,
+                    sheetName: SHEET_NAME,
+                    sheetId: GOOGLE_SHEETS_ID,
+                    data: data,
+                    rowIndex: rowIndex
+                };
+
+                console.log('Request payload:', requestBody);
+
+                // Try multiple approaches for better compatibility
+                let response;
+                let success = false;
+                let lastError;
+
+                // Approach 1: POST with form data
+                try {
+                    const formData = new FormData();
+                    formData.append('action', action);
+                    formData.append('sheetName', SHEET_NAME);
+                    formData.append('sheetId', GOOGLE_SHEETS_ID);
+                    if (data) {
+                        formData.append('data', JSON.stringify(data));
+                    }
+                    if (rowIndex) {
+                        formData.append('rowIndex', rowIndex.toString());
+                    }
+
+                    response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'cors',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        success = true;
+                        console.log('Form data approach successful');
+                    }
+                } catch (error) {
+                    console.log('Form data approach failed:', error);
+                    lastError = error;
+                }
+
+                // Approach 2: GET with URL parameters (if POST failed)
+                if (!success) {
+                    try {
+                        const url = new URL(GOOGLE_APPS_SCRIPT_URL);
+                        url.searchParams.append('action', action);
+                        url.searchParams.append('sheetName', SHEET_NAME);
+                        url.searchParams.append('sheetId', GOOGLE_SHEETS_ID);
+                        if (data) {
+                            url.searchParams.append('data', JSON.stringify(data));
+                        }
+                        if (rowIndex) {
+                            url.searchParams.append('rowIndex', rowIndex.toString());
+                        }
+
+                        response = await fetch(url.toString(), {
+                            method: 'GET',
+                            mode: 'cors'
+                        });
+
+                        if (response.ok) {
+                            success = true;
+                            console.log('GET approach successful');
+                        }
+                    } catch (error) {
+                        console.log('GET approach failed:', error);
+                        lastError = error;
+                    }
+                }
+
+                // Approach 3: POST with JSON (if both above failed)
+                if (!success) {
+                    try {
+                        response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'cors',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(requestBody)
+                        });
+
+                        if (response.ok) {
+                            success = true;
+                            console.log('JSON POST approach successful');
+                        }
+                    } catch (error) {
+                        console.log('JSON POST approach failed:', error);
+                        lastError = error;
+                    }
+                }
+
+                if (!success) {
+                    throw lastError || new Error('All connection approaches failed');
+                }
+
+                console.log('Response status:', response.status);
+
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.log('Response is not JSON, treating as success');
+                    result = { success: true, message: 'Operation completed' };
+                }
+
+                console.log('Parsed response:', result);
+
+                if (result.success !== false) {
+                    return true;
+                } else {
+                    throw new Error(result.error || result.message || 'Unknown error occurred');
+                }
+
+            } catch (error) {
+                console.error('Error saving to Google Sheets:', error);
+                
+                // Provide more specific error messages
+                let errorMessage = 'Terjadi kesalahan tidak dikenal';
+                
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Tidak dapat terhubung ke Google Sheets. Periksa koneksi internet Anda atau coba lagi nanti.';
+                } else if (error.message.includes('CORS')) {
+                    errorMessage = 'Masalah keamanan browser. Pastikan Google Apps Script sudah di-deploy dengan benar.';
+                } else if (error.message.includes('404')) {
+                    errorMessage = 'URL Google Apps Script tidak ditemukan. Periksa deployment ID.';
+                } else if (error.message.includes('403')) {
+                    errorMessage = 'Akses ditolak. Pastikan Google Apps Script dapat diakses oleh siapa saja.';
+                } else {
+                    errorMessage = error.message;
+                }
+                
+                throw new Error(errorMessage);
+            }
+        }
+
+        async function testGoogleAppsScriptConnection() {
+            try {
+                console.log('Testing Google Apps Script connection...');
+                
+                // Try multiple connection methods
+                let response;
+                let success = false;
+                
+                // Method 1: GET with test parameter
+                try {
+                    response = await fetch(GOOGLE_APPS_SCRIPT_URL + '?action=test', {
+                        method: 'GET',
+                        mode: 'cors'
+                    });
+                    
+                    if (response.ok) {
+                        success = true;
+                        console.log('GET test method successful');
+                    }
+                } catch (error) {
+                    console.log('GET test method failed:', error);
+                }
+                
+                // Method 2: POST test (if GET failed)
+                if (!success) {
+                    try {
+                        const formData = new FormData();
+                        formData.append('action', 'test');
+                        
+                        response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'cors',
+                            body: formData
+                        });
+                        
+                        if (response.ok) {
+                            success = true;
+                            console.log('POST test method successful');
+                        }
+                    } catch (error) {
+                        console.log('POST test method failed:', error);
+                    }
+                }
+                
+                if (success) {
+                    const result = await response.text();
+                    console.log('Google Apps Script connection test successful:', result);
+                    
+                    // Update debug info
+                    const debugInfo = document.getElementById('debugInfo');
+                    if (debugInfo) {
+                        debugInfo.textContent = 'Koneksi Google Sheets berhasil!';
+                        debugInfo.classList.remove('text-blue-600', 'text-red-600');
+                        debugInfo.classList.add('text-green-600');
+                    }
+                } else {
+                    throw new Error('All test methods failed');
+                }
+                
+            } catch (error) {
+                console.error('Google Apps Script connection test failed:', error);
+                
+                // Update debug info with more specific message
+                const debugInfo = document.getElementById('debugInfo');
+                if (debugInfo) {
+                    let message = 'Peringatan: Koneksi Google Sheets bermasalah!';
+                    
+                    if (error.message.includes('Failed to fetch')) {
+                        message = 'Peringatan: Tidak dapat terhubung ke Google Sheets. Fitur simpan mungkin tidak berfungsi.';
+                    } else if (error.message.includes('CORS')) {
+                        message = 'Peringatan: Masalah CORS. Pastikan Google Apps Script sudah di-deploy dengan benar.';
+                    }
+                    
+                    debugInfo.textContent = message;
+                    debugInfo.classList.remove('text-blue-600', 'text-green-600');
+                    debugInfo.classList.add('text-red-600');
+                }
+            }
+        }
+
+        // Function to convert company data to Google Sheets format
+        function formatDataForGoogleSheets(companyData) {
+            return {
+                'IDSBR': companyData['IDSBR'] || '',
+                'Nama Usaha': companyData['Nama Usaha'] || '',
+                'Kecamatan': companyData['Kecamatan'] || '',
+                'Desa': companyData['Desa'] || '',
+                'Dusun': companyData['Dusun'] || '',
+                'Alamat': companyData['Alamat'] || '',
+                'Status Perusahaan': companyData['Status Perusahaan'] || '',
+                'Kegiatan Usaha': companyData['Kegiatan Usaha'] || '',
+                'Kategori': companyData['Kategori'] || '',
+                'KBLI': companyData['KBLI'] || ''
+            };
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length === 0) return [];
+            
+            // Parse headers - handle quoted fields properly
+            const headers = parseCSVLine(lines[0]);
+            console.log('CSV Headers:', headers); // Debug log
+            
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue; // Skip empty lines
+                
+                const values = parseCSVLine(lines[i]);
+                const row = {};
+                
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                
+                // Only add rows that have some data
+                if (Object.values(row).some(value => value.trim() !== '')) {
+                    data.push(row);
+                }
+            }
+            
+            console.log('Parsed CSV data:', data); // Debug log
+            return data;
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim());
+            return result;
+        }
+
+        function populateKecamatanOptions() {
+            const kecamatanSelect = document.getElementById('kecamatanSelect');
+            const kecamatanFilter = document.getElementById('kecamatanFilter');
+            
+            if (!regionsData || regionsData.length === 0) {
+                console.log('No regions data available');
+                return;
+            }
+            
+            // Get all possible kecamatan column names and extract unique values
+            const kecamatans = [...new Set(regionsData.map(item => {
+                return item.Kecamatan || item.kecamatan || item['Kecamatan'] || item['kecamatan'] || '';
+            }))].filter(k => k && k.trim() !== '').sort();
+            
+            console.log('Available kecamatans:', kecamatans);
+            
+            kecamatanSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
+            kecamatanFilter.innerHTML = '<option value="">Semua Kecamatan</option>';
+            
+            kecamatans.forEach(kecamatan => {
+                kecamatanSelect.innerHTML += `<option value="${kecamatan}">${kecamatan}</option>`;
+                kecamatanFilter.innerHTML += `<option value="${kecamatan}">${kecamatan}</option>`;
+            });
+        }
+
+        function updateDesaOptions() {
+            const kecamatanSelect = document.getElementById('kecamatanSelect');
+            const desaSelect = document.getElementById('desaSelect');
+            const selectedKecamatan = kecamatanSelect.value;
+            
+            desaSelect.innerHTML = '<option value="">Pilih Desa</option>';
+            
+            if (selectedKecamatan && regionsData.length > 0) {
+                // Find matching kecamatan with flexible matching
+                const desas = regionsData
+                    .filter(item => {
+                        const itemKecamatan = item.Kecamatan || item.kecamatan || '';
+                        return itemKecamatan.toLowerCase().includes(selectedKecamatan.toLowerCase()) ||
+                               selectedKecamatan.toLowerCase().includes(itemKecamatan.toLowerCase()) ||
+                               itemKecamatan === selectedKecamatan;
+                    })
+                    .map(item => item.Desa || item.desa || item['Desa/Kelurahan'] || item['desa/kelurahan'])
+                    .filter(d => d && d.trim() !== '');
+                
+                // Remove duplicates and sort
+                const uniqueDesas = [...new Set(desas)].sort();
+                
+                uniqueDesas.forEach(desa => {
+                    desaSelect.innerHTML += `<option value="${desa}">${desa}</option>`;
+                });
+                
+                console.log('Updated desa options for', selectedKecamatan, ':', uniqueDesas);
+            }
+        }
+
+        function updateFilterDesaOptions() {
+            const kecamatanFilter = document.getElementById('kecamatanFilter');
+            const desaFilter = document.getElementById('desaFilter');
+            const selectedKecamatan = kecamatanFilter.value;
+            
+            desaFilter.innerHTML = '<option value="">Semua Desa</option>';
+            
+            if (selectedKecamatan && regionsData.length > 0) {
+                // Find matching kecamatan with flexible matching
+                const desas = regionsData
+                    .filter(item => {
+                        const itemKecamatan = item.Kecamatan || item.kecamatan || '';
+                        return itemKecamatan.toLowerCase().includes(selectedKecamatan.toLowerCase()) ||
+                               selectedKecamatan.toLowerCase().includes(itemKecamatan.toLowerCase()) ||
+                               itemKecamatan === selectedKecamatan;
+                    })
+                    .map(item => item.Desa || item.desa || item['Desa/Kelurahan'] || item['desa/kelurahan'])
+                    .filter(d => d && d.trim() !== '');
+                
+                // Remove duplicates and sort
+                const uniqueDesas = [...new Set(desas)].sort();
+                
+                uniqueDesas.forEach(desa => {
+                    desaFilter.innerHTML += `<option value="${desa}">${desa}</option>`;
+                });
+                
+                console.log('Updated filter desa options for', selectedKecamatan, ':', uniqueDesas);
+            }
+        }
+
+        function renderTable() {
+            filteredData = companiesData;
+            currentPage = 1;
+            renderPaginatedTable();
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'Aktif': return 'bg-green-100 text-green-800';
+                case 'Pindah': return 'bg-yellow-100 text-yellow-800';
+                case 'Tidak Ditemukan': return 'bg-red-100 text-red-800';
+                case 'Tidak Aktif': return 'bg-gray-100 text-gray-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function filterData() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const kecamatanFilter = document.getElementById('kecamatanFilter').value;
+            const desaFilter = document.getElementById('desaFilter').value;
+            
+            filteredData = companiesData.filter(company => {
+                const matchesSearch = !searchTerm || 
+                    (company['Nama Usaha'] || '').toLowerCase().includes(searchTerm) ||
+                    (company.Alamat || '').toLowerCase().includes(searchTerm) ||
+                    (company['Kegiatan Usaha'] || '').toLowerCase().includes(searchTerm);
+                
+                const matchesStatus = !statusFilter || company['Status Perusahaan'] === statusFilter;
+                const matchesKecamatan = !kecamatanFilter || company.Kecamatan === kecamatanFilter;
+                const matchesDesa = !desaFilter || company.Desa === desaFilter;
+                
+                return matchesSearch && matchesStatus && matchesKecamatan && matchesDesa;
+            });
+            
+            currentPage = 1;
+            renderPaginatedTable();
+        }
+
+        function renderPaginatedTable() {
+            const tableBody = document.getElementById('dataTable');
+            
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                            <i class="fas fa-search text-3xl mb-2"></i><br>
+                            Tidak ada data yang sesuai dengan pencarian
+                        </td>
+                    </tr>
+                `;
+                updatePaginationInfo(0, 0, 0);
+                return;
+            }
+
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, filteredData.length);
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            tableBody.innerHTML = pageData.map((company, index) => {
+                const originalIndex = companiesData.indexOf(company);
+                return `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${company.IDSBR || ''}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${company['Nama Usaha'] || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${company.Kecamatan || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${company.Desa || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(company['Status Perusahaan'])}">
+                                ${company['Status Perusahaan'] || ''}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="viewCompany(${originalIndex})" class="text-blue-600 hover:text-blue-900" title="Lihat">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="editCompany(${originalIndex})" class="text-green-600 hover:text-green-900" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteCompany(${originalIndex})" class="text-red-600 hover:text-red-900" title="Hapus">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            updatePaginationInfo(startIndex + 1, endIndex, filteredData.length);
+            renderPaginationControls();
+        }
+
+        function openModal(mode, index = -1) {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const form = document.getElementById('companyForm');
+            
+            currentEditIndex = index;
+            
+            if (mode === 'add') {
+                modalTitle.textContent = 'Tambah Data Perusahaan';
+                form.reset();
+            } else if (mode === 'edit') {
+                modalTitle.textContent = 'Edit Data Perusahaan';
+                fillForm(companiesData[index]);
+            } else if (mode === 'view') {
+                modalTitle.textContent = 'Detail Data Perusahaan';
+                fillForm(companiesData[index]);
+                setFormReadonly(true);
+            }
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            setFormReadonly(false);
+            currentEditIndex = -1;
+        }
+
+        function fillForm(data) {
+            const form = document.getElementById('companyForm');
+            const elements = form.elements;
+            
+            elements.idsbr.value = data.IDSBR || '';
+            elements.nama_usaha.value = data['Nama Usaha'] || '';
+            elements.kecamatan.value = data.Kecamatan || '';
+            
+            // Update desa options based on selected kecamatan
+            setTimeout(() => {
+                updateDesaOptions();
+                setTimeout(() => {
+                    elements.desa.value = data.Desa || '';
+                }, 50);
+            }, 100);
+            
+            elements.dusun.value = data.Dusun || '';
+            elements.alamat.value = data.Alamat || '';
+            elements.status_perusahaan.value = data['Status Perusahaan'] || '';
+            elements.kegiatan_usaha.value = data['Kegiatan Usaha'] || '';
+            elements.kategori.value = data.Kategori || '';
+            elements.kbli.value = data.KBLI || '';
+        }
+
+        function setFormReadonly(readonly) {
+            const form = document.getElementById('companyForm');
+            const inputs = form.querySelectorAll('input, select, textarea');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            inputs.forEach(input => {
+                input.disabled = readonly;
+            });
+            
+            if (submitBtn) {
+                submitBtn.style.display = readonly ? 'none' : 'block';
+            }
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner loading mr-2"></i>Menyimpan...';
+            
+            try {
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                const companyData = {
+                    'IDSBR': data.idsbr,
+                    'Nama Usaha': data.nama_usaha,
+                    'Kecamatan': data.kecamatan,
+                    'Desa': data.desa,
+                    'Dusun': data.dusun,
+                    'Alamat': data.alamat,
+                    'Status Perusahaan': data.status_perusahaan,
+                    'Kegiatan Usaha': data.kegiatan_usaha,
+                    'Kategori': data.kategori,
+                    'KBLI': data.kbli
+                };
+                
+                // Always update local data first
+                if (currentEditIndex === -1) {
+                    // Add new company
+                    companiesData.push(companyData);
+                    console.log('Added new company locally:', companyData);
+                } else {
+                    // Edit existing company
+                    companiesData[currentEditIndex] = companyData;
+                    console.log('Updated company locally at index', currentEditIndex, ':', companyData);
+                }
+                
+                // Update table and dashboard immediately
+                renderTable();
+                updateDashboard();
+                updateDashboardRealtime();
+                
+                // Try to save to Google Sheets
+                try {
+                    const formattedData = formatDataForGoogleSheets(companyData);
+                    
+                    if (currentEditIndex === -1) {
+                        await saveToGoogleSheets('add', formattedData);
+                        showNotification('Data berhasil ditambahkan dan disimpan ke Google Sheets!', 'success');
+                    } else {
+                        await saveToGoogleSheets('update', formattedData, currentEditIndex + 2);
+                        showNotification('Data berhasil diperbarui dan disimpan ke Google Sheets!', 'success');
+                    }
+                } catch (sheetsError) {
+                    console.error('Google Sheets save failed:', sheetsError);
+                    
+                    // Show warning but don't fail the operation
+                    const action = currentEditIndex === -1 ? 'ditambahkan' : 'diperbarui';
+                    showNotification(`Data berhasil ${action} secara lokal, tetapi gagal disimpan ke Google Sheets. ${sheetsError.message}`, 'warning');
+                    
+                    // Store failed operations for retry later
+                    const failedOperation = {
+                        action: currentEditIndex === -1 ? 'add' : 'update',
+                        data: formattedData,
+                        rowIndex: currentEditIndex === -1 ? null : currentEditIndex + 2,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // Store in localStorage for potential retry
+                    const failedOps = JSON.parse(localStorage.getItem('failedGoogleSheetsOps') || '[]');
+                    failedOps.push(failedOperation);
+                    localStorage.setItem('failedGoogleSheetsOps', JSON.stringify(failedOps));
+                    
+                    console.log('Stored failed operation for retry:', failedOperation);
+                }
+                
+                closeModal();
+                
+            } catch (error) {
+                console.error('Error in form submission:', error);
+                showNotification(`Terjadi kesalahan: ${error.message}`, 'error');
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        function updateDashboardRealtime() {
+            console.log('Real-time dashboard update triggered');
+            
+            // Add visual feedback that dashboard is updating
+            const dashboardSection = document.getElementById('dashboardSection');
+            if (dashboardSection && !dashboardSection.classList.contains('hidden')) {
+                // Add pulsing effect to entire dashboard
+                dashboardSection.style.opacity = '0.8';
+                dashboardSection.style.transform = 'scale(0.98)';
+                
+                setTimeout(() => {
+                    dashboardSection.style.opacity = '1';
+                    dashboardSection.style.transform = 'scale(1)';
+                }, 300);
+                
+                // Add chart animation
+                const charts = dashboardSection.querySelectorAll('canvas');
+                charts.forEach(chart => {
+                    chart.style.opacity = '0.5';
+                    chart.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        chart.style.opacity = '1';
+                        chart.style.transform = 'scale(1)';
+                    }, 400);
+                });
+            }
+            
+            // Force update dashboard with slight delay for visual effect
+            setTimeout(() => {
+                console.log('Executing delayed dashboard update');
+                updateDashboard();
+            }, 150);
+        }
+
+        function changeRowsPerPage() {
+            rowsPerPage = parseInt(document.getElementById('rowsPerPage').value);
+            currentPage = 1;
+            renderPaginatedTable();
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderPaginatedTable();
+            }
+        }
+
+        function goToPage(page) {
+            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                renderPaginatedTable();
+            }
+        }
+
+        function updatePaginationInfo(start, end, total) {
+            document.getElementById('showingStart').textContent = start;
+            document.getElementById('showingEnd').textContent = end;
+            document.getElementById('totalRows').textContent = total;
+        }
+
+        function renderPaginationControls() {
+            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            const prevButton = document.getElementById('prevPage');
+            const nextButton = document.getElementById('nextPage');
+            const pageNumbers = document.getElementById('pageNumbers');
+
+            // Update button states
+            prevButton.disabled = currentPage === 1;
+            nextButton.disabled = currentPage === totalPages || totalPages === 0;
+
+            // Generate page numbers
+            let pageNumbersHTML = '';
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            if (startPage > 1) {
+                pageNumbersHTML += `<button onclick="goToPage(1)" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">1</button>`;
+                if (startPage > 2) {
+                    pageNumbersHTML += `<span class="px-2 py-2 text-sm text-gray-500">...</span>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = i === currentPage;
+                pageNumbersHTML += `
+                    <button onclick="goToPage(${i})" class="px-3 py-2 text-sm border rounded-lg ${
+                        isActive 
+                            ? 'bg-blue-500 text-white border-blue-500' 
+                            : 'border-gray-300 hover:bg-gray-50'
+                    }">${i}</button>
+                `;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    pageNumbersHTML += `<span class="px-2 py-2 text-sm text-gray-500">...</span>`;
+                }
+                pageNumbersHTML += `<button onclick="goToPage(${totalPages})" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">${totalPages}</button>`;
+            }
+
+            pageNumbers.innerHTML = pageNumbersHTML;
+        }
+
+        function viewCompany(index) {
+            openModal('view', index);
+        }
+
+        function editCompany(index) {
+            openModal('edit', index);
+        }
+
+        async function deleteCompany(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini? Data akan dihapus dari Google Sheets juga.')) {
+                try {
+                    const deletedCompany = companiesData[index];
+                    console.log('Deleting company:', deletedCompany);
+                    
+                    // Remove from local data first
+                    companiesData.splice(index, 1);
+                    console.log('Companies data after deletion:', companiesData.length, 'companies remaining');
+                    
+                    // Update table and dashboard immediately
+                    renderTable();
+                    updateDashboard();
+                    updateDashboardRealtime();
+                    
+                    // Try to delete from Google Sheets
+                    try {
+                        showNotification('Menghapus data dari Google Sheets...', 'info');
+                        await saveToGoogleSheets('delete', null, index + 2); // +2 because row 1 is header and array is 0-indexed
+                        showNotification('Data berhasil dihapus dari Google Sheets dan dashboard telah diperbarui!', 'success');
+                    } catch (sheetsError) {
+                        console.error('Google Sheets delete failed:', sheetsError);
+                        
+                        // Show warning but don't revert the local deletion
+                        showNotification(`Data berhasil dihapus secara lokal, tetapi gagal dihapus dari Google Sheets. ${sheetsError.message}`, 'warning');
+                        
+                        // Store failed delete operation for potential retry
+                        const failedOperation = {
+                            action: 'delete',
+                            data: deletedCompany,
+                            rowIndex: index + 2,
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        const failedOps = JSON.parse(localStorage.getItem('failedGoogleSheetsOps') || '[]');
+                        failedOps.push(failedOperation);
+                        localStorage.setItem('failedGoogleSheetsOps', JSON.stringify(failedOps));
+                        
+                        console.log('Stored failed delete operation for retry:', failedOperation);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error in delete operation:', error);
+                    showNotification(`Terjadi kesalahan saat menghapus data: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        function refreshData() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.classList.add('loading');
+            
+            Promise.all([loadRegionsData(), loadCompaniesData()])
+                .then(() => {
+                    showNotification('Data berhasil diperbarui!', 'success');
+                })
+                .catch(() => {
+                    showNotification('Gagal memperbarui data!', 'error');
+                })
+                .finally(() => {
+                    refreshIcon.classList.remove('loading');
+                });
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            let bgColor, icon, duration;
+            
+            switch(type) {
+                case 'success':
+                    bgColor = 'bg-green-500';
+                    icon = 'fa-check-circle';
+                    duration = 3000;
+                    break;
+                case 'error':
+                    bgColor = 'bg-red-500';
+                    icon = 'fa-exclamation-circle';
+                    duration = 5000;
+                    break;
+                case 'warning':
+                    bgColor = 'bg-yellow-500';
+                    icon = 'fa-exclamation-triangle';
+                    duration = 6000;
+                    break;
+                case 'info':
+                    bgColor = 'bg-blue-500';
+                    icon = 'fa-info-circle';
+                    duration = 2000;
+                    break;
+                default:
+                    bgColor = 'bg-gray-500';
+                    icon = 'fa-bell';
+                    duration = 3000;
+            }
+            
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 fade-in ${bgColor} max-w-md shadow-lg`;
+            notification.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <i class="fas ${icon} mt-1 flex-shrink-0"></i>
+                    <div class="flex-1">
+                        <span class="text-sm leading-relaxed">${message}</span>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200 flex-shrink-0">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, duration);
+        }
+
+        function toggleMainMenu() {
+            const dropdown = document.getElementById('mainDropdownMenu');
+            const chevron = document.getElementById('mainMenuChevron');
+            
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                chevron.classList.remove('fa-chevron-down');
+                chevron.classList.add('fa-chevron-up');
+            } else {
+                dropdown.classList.add('hidden');
+                chevron.classList.remove('fa-chevron-up');
+                chevron.classList.add('fa-chevron-down');
+            }
+        }
+
+        function closeMainMenu() {
+            const dropdown = document.getElementById('mainDropdownMenu');
+            const chevron = document.getElementById('mainMenuChevron');
+            
+            dropdown.classList.add('hidden');
+            chevron.classList.remove('fa-chevron-up');
+            chevron.classList.add('fa-chevron-down');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('mainDropdownMenu');
+            const menuButton = e.target.closest('[onclick="toggleMainMenu()"]');
+            
+            if (!menuButton && !dropdown.contains(e.target)) {
+                closeMainMenu();
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96dd216af76c2fbd',t:'MTc1NDk3MTkwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
